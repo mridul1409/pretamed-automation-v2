@@ -3,3 +3,4 @@ cypress/screenshots/
 cypress/videos/
 cypress/results/*.txt
 .DS_Store
+config
