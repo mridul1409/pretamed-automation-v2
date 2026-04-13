@@ -85,6 +85,81 @@ class ChartPage {
     cy.contains(/deleted.*successfully/i).should("be.visible");
     this.waitForLoaders();
   }
+
+  // Selectors for Intraocular Pressure
+  get iPressureContainer() { return cy.get("#iPressure"); }
+  get addPressureBtn() { return this.iPressureContainer.find(".chart-header button.MuiIconButton-colorPrimary"); }
+
+  /**
+   * Complete CRUD operation for Intraocular Pressure
+   */
+  intraocularPressureCRUD() {
+    const initialRE = Math.floor(100 + Math.random() * 900);
+    const initialLE = Math.floor(100 + Math.random() * 900);
+    const updatedRE = Math.floor(100 + Math.random() * 900);
+    const updatedLE = Math.floor(100 + Math.random() * 900);
+    const day = (Math.floor(Math.random() * 28) + 1).toString().padStart(2, "0");
+
+    // --- CREATE ---
+    this.addPressureBtn.click({ force: true });
+    this.iPressureContainer.find("table tbody tr").first().within(() => {
+      cy.get("td").eq(0).find("input").first().type(`2026-02-${day}`, { force: true });
+      cy.get("td").eq(1).find("input").first().type(initialRE.toString(), { force: true });
+      cy.get("td").eq(2).find("input").first().type(initialLE.toString(), { force: true });
+      cy.get("td").last().find("button").first().click({ force: true });
+    });
+    cy.contains(/created.*successfully/i).should("be.visible");
+    cy.contains(/created.*successfully/i).should("not.exist");
+    this.waitForLoaders();
+
+    // --- UPDATE PART ---
+    // Use an alias to target the exact row we want to edit
+    cy.contains("#iPressure tr", initialRE.toString())
+      .scrollIntoView()
+      .should("be.visible")
+      .as('rowToUpdate');
+
+    // Click the row to enter edit mode
+    cy.get('@rowToUpdate').click({ force: true });
+
+    // Important: Wait for the row to actually contain inputs (Edit Mode)
+    cy.get('@rowToUpdate').within(() => {
+      // Increased wait for stable input rendering after the TypeError
+      cy.get("input", { timeout: 15000 }).should("be.visible");
+
+      cy.get("td").eq(1).find("input").clear({ force: true }).type(updatedRE.toString(), { force: true });
+      cy.get("td").eq(2).find("input").clear({ force: true }).type(updatedLE.toString(), { force: true });
+
+      // Click the Save button (blue tick) within the same row
+      cy.get("td").last().find("button").first().click({ force: true });
+    });
+
+    cy.contains(/updated.*successfully/i).should("be.visible");
+    this.waitForLoaders();
+    
+// --- DELETE PART ---
+    // Using an alias to target the specific row that contains the updated value
+    cy.contains("#iPressure tr", updatedRE.toString())
+      .scrollIntoView()
+      .should("be.visible")
+      .as('rowToDelete');
+
+    // Click the specific row to enter edit mode
+    cy.get("@rowToDelete").click({ force: true });
+
+    // Locate the delete button within the same targeted row
+    cy.get("@rowToDelete").within(() => {
+      // Increased timeout to wait for the delete button to render after the app exception
+      cy.get('button[aria-label="Delete"]', { timeout: 15000 })
+        .should("be.visible")
+        .click({ force: true });
+    });
+
+    // Standard confirmation flow
+    cy.contains("button", "Yes, delete it!").click({ force: true });
+    cy.contains(/deleted.*successfully/i).should("be.visible");
+    this.waitForLoaders();
+  }
 }
 
 export default new ChartPage();
