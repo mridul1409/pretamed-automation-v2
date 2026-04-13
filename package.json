@@ -1,0 +1,21 @@
+{
+  "name": "pretamed-automation-v2",
+  "version": "1.0.0",
+  "main": "index.js",
+  
+"scripts": {
+  "cy:open:local": "cypress open --env version=local",
+  "cy:open:dev": "cypress open --env version=dev",
+  "cy:open:pre": "cypress open --env version=pre",
+  "cy:run:local": "cypress run --env version=local --headed",
+  "cy:run:dev": "cypress run --env version=dev --headed",
+  "cy:run:pre": "cypress run --env version=pre --headed"
+},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "cypress": "^14.5.4"
+  }
+}

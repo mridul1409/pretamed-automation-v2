@@ -1,0 +1,19 @@
+{
+  "baseUrl": "https://www.dev.pretamed.com/",
+  "env": {
+    "ORG_PATH": "/organization",
+    "PATIENT_LIST_PATH": "/patients",
+    "PATIENT_CHART_PATH": "/patient-chart",
+    "SCHEDULE_PATH": "/schedule",
+    "INBOX_PATH": "/inbox",
+    "TARGET_ORG": "ABC",
+    "apiBaseUrl": "dev.api.pretamed.com",
+    "sessionCookie": "s%3A3M6GufywSxpk8q_p-znQysIdcKGcHvzd.s3bN%2FRM1YPqAb00iHYF5BqqCkjVhSt9tfblFXTvg4Vc",
+    "cookieOptions": {
+      "domain": ".pretamed.com",
+      "secure": true,
+      "path": "/",
+      "sameSite": "none"
+    }
+  }
+}
