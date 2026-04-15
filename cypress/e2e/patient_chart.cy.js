@@ -16,7 +16,7 @@ describe("Patient Chart Clinical Operations", () => {
 
     before(() => {
         cy.task("initOperationReport", {
-            title: "Patient Chart CRUD Operations",
+            title: "Patient Chart CRUD",
             url: Cypress.config().baseUrl + Cypress.env("PATIENT_CHART_PATH"),
             mode: "new"
         });
@@ -48,7 +48,7 @@ describe("Patient Chart Clinical Operations", () => {
         chartPage.navigateToPatientChart(TEST_DATA.targetOrg, TEST_DATA.targetPatient);
     });
 
-    it("Medical Operation: Visual Acuity", () => {
+    it("Visual Acuity", () => {
         currentOpInfo = { name: "Visual Acuity", status: "PENDING" };
 
         cy.get('body').then(($body) => {
@@ -58,6 +58,34 @@ describe("Patient Chart Clinical Operations", () => {
             } else {
                 currentOpInfo.status = "MISSING";
                 cy.log(">>> Visual Acuity section is missing. Skipping...");
+            }
+        });
+    });
+
+    it("Intraocular Pressure", () => {
+        currentOpInfo = { name: "Intraocular Pressure", status: "PENDING" };
+
+        cy.get('body').then(($body) => {
+            if ($body.find("#iPressure").length > 0 && $body.find("#iPressure").is(':visible')) {
+                chartPage.intraocularPressureCRUD();
+                currentOpInfo.status = "PASSED";
+            } else {
+                currentOpInfo.status = "MISSING";
+                cy.log(">>> Intraocular Pressure section is missing. Skipping...");
+            }
+        });
+    });
+
+    it("Level of Care", () => {
+        currentOpInfo = { name: "Level of Care", status: "PENDING" };
+
+        cy.get('body').then(($body) => {
+            if ($body.find("#levelOfCare").length > 0 && $body.find("#levelOfCare").is(':visible')) {
+                chartPage.levelOfCareCRUD();
+                currentOpInfo.status = "PASSED";
+            } else {
+                currentOpInfo.status = "MISSING";
+                cy.log(">>> Level of Care section is missing. Skipping...");
             }
         });
     });
