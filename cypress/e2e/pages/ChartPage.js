@@ -136,8 +136,8 @@ class ChartPage {
 
     cy.contains(/updated.*successfully/i).should("be.visible");
     this.waitForLoaders();
-    
-// --- DELETE PART ---
+
+    // --- DELETE PART ---
     // Using an alias to target the specific row that contains the updated value
     cy.contains("#iPressure tr", updatedRE.toString())
       .scrollIntoView()
@@ -158,6 +158,150 @@ class ChartPage {
     // Standard confirmation flow
     cy.contains("button", "Yes, delete it!").click({ force: true });
     cy.contains(/deleted.*successfully/i).should("be.visible");
+    this.waitForLoaders();
+  }
+
+  // Selectors for Level of Care
+  get levelOfCareContainer() { return cy.get("#levelOfCare"); }
+  get addLevelBtn() { return this.levelOfCareContainer.find(".chart-header button.MuiIconButton-colorPrimary"); }
+
+  /**
+   * Complete CRUD operation for Level of Care
+   */
+  levelOfCareCRUD() {
+    const createId = Math.floor(100 + Math.random() * 900);
+    const updateId = Math.floor(100 + Math.random() * 900);
+    const initialDesc = "Routine check ID: " + createId;
+    const updatedDesc = "Urgent follow-up ID: " + updateId;
+
+    // --- CREATE PART ---
+    this.addLevelBtn.click({ force: true });
+    this.levelOfCareContainer.find("table tbody tr").first().within(() => {
+      cy.get("td").eq(0).find("input").first().type("2026-02-03", { force: true });
+      cy.get("td").eq(1).find("input").first().type("Stable", { force: true });
+      cy.get("td").eq(2).find("input").first().type(initialDesc, { force: true });
+      cy.get("td").eq(3).find("input").first().type("Doctor Mehedi", { force: true });
+      cy.get("td").last().find("button").first().click({ force: true });
+    });
+    cy.contains(/ *created.*successfully/i, { timeout: 20000 }).should("be.visible");
+    cy.contains(/ *created.*successfully/i, { timeout: 20000 }).should("not.exist");
+
+    this.waitForLoaders();
+
+    // --- UPDATE PART ---
+    cy.contains("#levelOfCare tr", createId.toString())
+      .scrollIntoView()
+      .should("be.visible")
+      .as('levelRowToUpdate');
+
+    cy.get('@levelRowToUpdate').click({ force: true });
+    cy.get('@levelRowToUpdate').within(() => {
+      // Waiting for edit mode inputs to render properly
+      cy.get("input", { timeout: 15000 }).should("be.visible");
+      cy.get("td").eq(1).find("input").clear({ force: true }).type("Urgent", { force: true });
+      cy.get("td").eq(2).find("input").clear({ force: true }).type(updatedDesc, { force: true });
+      cy.get("td").last().find("button").first().click({ force: true });
+    });
+    cy.contains(/ *updated.*successfully/i, { timeout: 20000 }).should("be.visible");
+    cy.contains(/ *updated.*successfully/i, { timeout: 20000 }).should("not.exist");
+
+    this.waitForLoaders();
+
+    // --- DELETE PART ---
+    cy.contains("#levelOfCare tr", updateId.toString())
+      .scrollIntoView()
+      .should("be.visible")
+      .as('levelRowToDelete');
+
+    cy.get("@levelRowToDelete").click({ force: true });
+    cy.get("@levelRowToDelete").within(() => {
+      cy.get('button[aria-label="Delete"]', { timeout: 15000 })
+        .should("be.visible")
+        .click({ force: true });
+    });
+    cy.contains("button", "Yes, delete it!").click({ force: true });
+    cy.contains(/ *deleted.*successfully/i, { timeout: 20000 }).should("be.visible");
+    cy.contains(/ *deleted.*successfully/i, { timeout: 20000 }).should("not.exist");
+    this.waitForLoaders();
+  }
+
+  // Selectors for Allergies
+  get allergyContainer() { return cy.get("#allergies"); }
+  get addAllergyBtn() { return this.allergyContainer.find(".chart-header button.MuiIconButton-colorPrimary"); }
+
+  /**
+   * Complete CRUD operation for Medication Allergy
+   */
+  medicationAllergyCRUD() {
+    const idCreate = Math.floor(100 + Math.random() * 900);
+    const idUpdate = Math.floor(100 + Math.random() * 900);
+    const initialName = "Penicillin ID: " + idCreate;
+    const updatedName = "Amoxicillin ID: " + idUpdate;
+
+    // --- CREATE PART ---
+    this.addAllergyBtn.click({ force: true });
+
+    // Handle the "New Allergy" menu if it appears
+    cy.get("body").then(($body) => {
+      if ($body.find('li:contains("New Allergy")').length > 0) {
+        cy.contains("li", "New Allergy").click({ force: true });
+      }
+    });
+
+    this.allergyContainer.find("table tbody tr").first().as('allergyNewRow').within(() => {
+      cy.get("td").eq(0).find("input").type(initialName, { force: true });
+      cy.get("td").eq(1).find(".MuiSelect-select").click({ force: true });
+    });
+    cy.get('li[role="option"]').contains("Medication").click({ force: true });
+
+    cy.get('@allergyNewRow').within(() => {
+      cy.get("td").eq(2).find("input").type("Severe Rash", { force: true });
+      cy.get("td").last().find("button").first().click({ force: true });
+    });
+
+    cy.contains(/ *created.*successfully/i, { timeout: 20000 }).should("be.visible");
+        cy.contains(/ *created.*successfully/i, { timeout: 20000 }).should("not.exist");
+
+    this.waitForLoaders();
+
+    // --- UPDATE PART ---
+    cy.contains("#allergies tr", idCreate.toString())
+      .scrollIntoView()
+      .as("medRowToUpdate");
+    
+    // Click first cell to enter edit mode
+    cy.get("@medRowToUpdate").find("td").first().click({ force: true });
+
+    cy.get("@medRowToUpdate").within(() => {
+      cy.get("input", { timeout: 15000 }).should("be.visible");
+      cy.get("td").eq(0).find("input").first().clear({ force: true }).type(updatedName, { force: true });
+      cy.get("td").eq(2).find("input").first().clear({ force: true }).type("Urticaria", { force: true });
+      cy.get("td").last().find("button").first().click({ force: true });
+    });
+
+    cy.contains(/ *updated.*successfully/i, { timeout: 20000 }).should("be.visible");
+    cy.contains(/ *updated.*successfully/i, { timeout: 20000 }).should("not.exist");
+    this.waitForLoaders();
+
+    // --- DELETE PART ---
+    cy.contains("#allergies tr", idUpdate.toString())
+      .scrollIntoView()
+      .as("medRowToDelete");
+
+    cy.get("@medRowToDelete").find("td").first().click({ force: true });
+
+    cy.get("@medRowToDelete").within(() => {
+      cy.get("input", { timeout: 15000 }).should("be.visible");
+      // Targeting the red delete button specifically
+      cy.get('button[aria-label="Delete"], button[aria-label="delete"]')
+        .filter(".MuiIconButton-colorError")
+        .should("be.visible")
+        .click({ force: true });
+    });
+
+    cy.contains("button", "Yes, delete it!").click({ force: true });
+    cy.contains(/ *deleted.*successfully/i, { timeout: 20000 }).should("be.visible");
+    cy.contains(/ *deleted.*successfully/i, { timeout: 20000 }).should("not.exist");
     this.waitForLoaders();
   }
 }
