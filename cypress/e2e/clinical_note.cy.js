@@ -36,7 +36,7 @@ describe("Patient Chart Clinical Operations", () => {
         });
     });
 
-    it("Step 1: Navigate and Search Patient", () => {
+    it("Navigate and Search Patient", () => {
         // Construct the patient list URL from config
         const listUrl = Cypress.config().baseUrl.replace(/\/$/, "") + Cypress.env("PATIENT_LIST_PATH");
 
@@ -49,19 +49,19 @@ describe("Patient Chart Clinical Operations", () => {
     });
 
 
-    // it("Progress Notes", () => {
-    //     currentOpInfo = { name: "Progress Notes", status: "PENDING" };
+    it("Progress Notes", () => {
+        currentOpInfo = { name: "Progress Notes", status: "PENDING" };
 
-    //     cy.get('body').then(($body) => {
-    //         if ($body.find("#notes").length > 0 && $body.find("#notes").is(':visible')) {
-    //             chartPage.progressNoteCRUD();
-    //             currentOpInfo.status = "PASSED";
-    //         } else {
-    //             currentOpInfo.status = "MISSING";
-    //             cy.log(">>> Progress Notes section is missing. Skipping...");
-    //         }
-    //     });
-    // });
+        cy.get('body').then(($body) => {
+            if ($body.find("#notes").length > 0 && $body.find("#notes").is(':visible')) {
+                chartPage.progressNoteCRUD();
+                currentOpInfo.status = "PASSED";
+            } else {
+                currentOpInfo.status = "MISSING";
+                cy.log(">>> Progress Notes section is missing. Skipping...");
+            }
+        });
+    });
 
 
     it("Consult Notes", () => {

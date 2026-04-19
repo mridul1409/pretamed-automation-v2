@@ -1323,7 +1323,7 @@ class ChartPage {
       cy.contains("button", /^EDIT$/i).click({ force: true });
     });
     cy.contains("button", /Confirm/i).click({ force: true });
-        cy.contains(/note.*successfully/i).should("be.visible");
+    cy.contains(/note.*successfully/i).should("be.visible");
     cy.contains(/note.*successfully/i).should("not.exist");
     this.waitForLoaders();
 
@@ -1337,7 +1337,7 @@ class ChartPage {
     cy.get(".monaco-editor").first().click({ force: true }).find("textarea").first()
       .type(" - Updated for version 2. ID: " + updateId, { force: true, delay: 10 });
 
-cy.wait(5000);
+    cy.wait(5000);
 
     // Sign Version 2
     cy.contains("button", /^SIGN & PRINT$/i).closest(".MuiBox-root").within(() => {
@@ -1345,7 +1345,7 @@ cy.wait(5000);
     });
 
     this.waitForLoaders();
-            cy.contains(/note.*successfully/i).should("be.visible");
+    cy.contains(/note.*successfully/i).should("be.visible");
     cy.contains(/note.*successfully/i).should("not.exist");
     // Final verification of status
     this.notesContainer.contains("tr", "Updated Note " + updateId).within(() => {
@@ -1354,7 +1354,7 @@ cy.wait(5000);
     cy.contains("button", /^SIGN & PRINT$/i).closest(".MuiBox-root").within(() => {
       cy.contains("button", /^CLOSE$/i).click({ force: true });
     });
-        this.waitForLoaders();
+    this.waitForLoaders();
 
 
     // --- DELETE PART ---
@@ -1379,14 +1379,14 @@ cy.wait(5000);
 
     // 4. Verify success message and wait for UI to stabilize
     cy.contains(/deleted.*successfully/i, { timeout: 20000 }).should("be.visible");
-        cy.contains(/deleted.*successfully/i, { timeout: 20000 }).should("not.exist");
+    cy.contains(/deleted.*successfully/i, { timeout: 20000 }).should("not.exist");
 
     this.waitForLoaders();
 
     // 5. Verification: Ensure the deleted note title no longer exists in the table
     this.notesContainer.should('not.contain', "Updated Note " + updateId);
 
-    
+
   }
 
   consultNoteCRUD() {
@@ -1398,7 +1398,7 @@ cy.wait(5000);
     cy.contains("li", /New Consult Note/i, { timeout: 15000 }).click({ force: true });
     this.waitForLoaders();
 
-// --- FILL REFERRING PROVIDER INFORMATION ---
+    // --- FILL REFERRING PROVIDER INFORMATION ---
     // 1. Target the specific Referring Provider Information container
     cy.contains("p", /Referring Provider Information/i)
       .closest(".MuiBox-root")
@@ -1481,7 +1481,7 @@ cy.wait(5000);
       cy.contains("button", /^EDIT$/i).click({ force: true });
     });
     cy.contains("button", /Confirm/i).click({ force: true });
-        cy.contains(/note.*successfully/i).should("be.visible");
+    cy.contains(/note.*successfully/i).should("be.visible");
     cy.contains(/note.*successfully/i).should("not.exist");
     this.waitForLoaders();
 
@@ -1495,7 +1495,7 @@ cy.wait(5000);
     cy.get(".monaco-editor").first().click({ force: true }).find("textarea").first()
       .type(" - Updated for version 2. ID: " + updateId, { force: true, delay: 10 });
 
-cy.wait(5000);
+    cy.wait(5000);
 
     // Sign Version 2
     cy.contains("button", /^SIGN & PRINT$/i).closest(".MuiBox-root").within(() => {
@@ -1503,7 +1503,7 @@ cy.wait(5000);
     });
 
     this.waitForLoaders();
-            cy.contains(/note.*successfully/i).should("be.visible");
+    cy.contains(/note.*successfully/i).should("be.visible");
     cy.contains(/note.*successfully/i).should("not.exist");
     // Final verification of status
     this.notesContainer.contains("tr", "Updated Consult Note " + updateId).within(() => {
@@ -1512,7 +1512,7 @@ cy.wait(5000);
     cy.contains("button", /^SIGN & PRINT$/i).closest(".MuiBox-root").within(() => {
       cy.contains("button", /^CLOSE$/i).click({ force: true });
     });
-        this.waitForLoaders();
+    this.waitForLoaders();
 
     // --- DELETE PART ---
     // 1. Locate the updated consult note row in the table
@@ -1536,14 +1536,14 @@ cy.wait(5000);
 
     // 4. Verify success message and wait for UI to stabilize
     cy.contains(/deleted.*successfully/i, { timeout: 20000 }).should("be.visible");
-        cy.contains(/deleted.*successfully/i, { timeout: 20000 }).should("not.exist");
+    cy.contains(/deleted.*successfully/i, { timeout: 20000 }).should("not.exist");
 
     this.waitForLoaders();
 
     // 5. Verification: Ensure the deleted note title no longer exists in the table
     this.notesContainer.should('not.contain', "Updated Consult Note " + updateId);
 
-    
+
   }
 
 }
