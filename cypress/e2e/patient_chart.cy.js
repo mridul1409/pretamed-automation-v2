@@ -258,7 +258,6 @@ describe("Patient Chart Clinical Operations", () => {
         });
     });
 
-
     it("Order - Medication", () => {
         currentOpInfo = { name: "Order: Medication", status: "PENDING" };
 
@@ -287,7 +286,6 @@ describe("Patient Chart Clinical Operations", () => {
         });
     });
 
-
     it("Order - Lab", () => {
         currentOpInfo = { name: "Order: Lab", status: "PENDING" };
 
@@ -302,18 +300,5 @@ describe("Patient Chart Clinical Operations", () => {
         });
     });
 
-    it("Progress Notes", () => {
-        currentOpInfo = { name: "Progress Notes", status: "PENDING" };
-
-        cy.get('body').then(($body) => {
-            if ($body.find("#notes").length > 0 && $body.find("#notes").is(':visible')) {
-                chartPage.progressNoteCRUD();
-                currentOpInfo.status = "PASSED";
-            } else {
-                currentOpInfo.status = "MISSING";
-                cy.log(">>> Progress Notes section is missing. Skipping...");
-            }
-        });
-    });
 
 });

@@ -405,7 +405,7 @@ class ChartPage {
       cy.get("td").eq(0).find("input").type(initialName, { force: true });
       cy.get("td").eq(1).find(".MuiSelect-select").click({ force: true });
     });
-    
+
     // Selecting Environmental category
     cy.get('li[role="option"]').contains("Environmental").click({ force: true });
 
@@ -421,7 +421,7 @@ class ChartPage {
     cy.contains("#allergies tr", idCreate.toString())
       .scrollIntoView()
       .as("envRowToUpdate");
-    
+
     cy.get("@envRowToUpdate").find("td").first().click({ force: true });
 
     cy.get("@envRowToUpdate").within(() => {
@@ -476,7 +476,7 @@ class ChartPage {
       cy.get("td").eq(0).find("input").type(initialName, { force: true });
       cy.get("td").eq(1).find(".MuiSelect-select").click({ force: true });
     });
-    
+
     // Selecting Biologic category from dropdown
     cy.get('li[role="option"]').contains("Biologic").click({ force: true });
 
@@ -492,7 +492,7 @@ class ChartPage {
     cy.contains("#allergies tr", idCreate.toString())
       .scrollIntoView()
       .as("bioRowToUpdate");
-    
+
     cy.get("@bioRowToUpdate").find("td").first().click({ force: true });
 
     cy.get("@bioRowToUpdate").within(() => {
@@ -525,7 +525,7 @@ class ChartPage {
     this.waitForLoaders();
   }
 
-// Selectors for Vital Measurements
+  // Selectors for Vital Measurements
   get measurementsContainer() { return cy.get("#measurements"); }
   get addVitalsBtn() { return this.measurementsContainer.find(".chart-header button.MuiIconButton-colorPrimary"); }
 
@@ -568,11 +568,11 @@ class ChartPage {
     cy.get("@vitalsRowToUpdate").within(() => {
       // Wait for edit mode inputs to appear
       cy.get("input", { timeout: 15000 }).should("be.visible");
-      
+
       // Updating HR and SPO2
       cy.get("td").eq(2).find("input").clear({ force: true }).type(hrUpdate.toString(), { force: true });
       cy.get("td").eq(3).find("input").clear({ force: true }).type("99", { force: true });
-      
+
       cy.get("td").last().find("button").first().click({ force: true });
     });
 
@@ -602,7 +602,7 @@ class ChartPage {
     this.waitForLoaders();
   }
 
-// Selectors for Body Measurements
+  // Selectors for Body Measurements
   get phyMeasurementsContainer() { return cy.get("#phyMeasurements"); }
   get addPhyBtn() { return this.phyMeasurementsContainer.find(".chart-header button.MuiIconButton-colorPrimary"); }
 
@@ -703,10 +703,10 @@ class ChartPage {
     cy.get("@medHxRowToUpdate").within(() => {
       // Ensure input fields are rendered
       cy.get("input", { timeout: 15000 }).should("be.visible");
-      
+
       cy.get("td").eq(0).find("input").first().clear({ force: true }).type(updatedDiagnosis, { force: true });
       cy.get("td").eq(3).find("input").first().clear({ force: true }).type("Condition updated with new ID: " + idUpdate, { force: true });
-      
+
       cy.get("td").last().find("button").first().click({ force: true });
     });
 
@@ -733,7 +733,7 @@ class ChartPage {
     this.waitForLoaders();
   }
 
-// Selectors for Surgical History
+  // Selectors for Surgical History
   get surgicalHxContainer() { return cy.get("#surgicalHx"); }
   get addSurgicalBtn() { return this.surgicalHxContainer.find(".chart-header button.MuiIconButton-colorPrimary"); }
 
@@ -832,7 +832,7 @@ class ChartPage {
     cy.get("@familyRowToUpdate").within(() => {
       // Wait for input fields to render properly
       cy.get("input", { timeout: 15000 }).should("be.visible");
-      
+
       cy.get("td").eq(0).find("input").first().clear({ force: true }).type(updatedFamily, { force: true });
       cy.get("td").last().find("button").first().click({ force: true });
     });
@@ -929,7 +929,7 @@ class ChartPage {
 
     cy.contains("button", "Yes, delete it!").click({ force: true });
     cy.contains(/ *deleted.*successfully/i, { timeout: 20000 }).should("be.visible");
-        cy.contains(/ *deleted.*successfully/i, { timeout: 20000 }).should("not.exist");
+    cy.contains(/ *deleted.*successfully/i, { timeout: 20000 }).should("not.exist");
 
     this.waitForLoaders();
   }
@@ -1017,14 +1017,14 @@ class ChartPage {
 
     // --- CREATE PART ---
     this.addOrderBtn.scrollIntoView().click({ force: true });
-    
+
     // Search for medication
     this.ordersContainer.find('input[placeholder="Add new order"]')
       .first()
       .should("be.enabled")
       .click({ force: true })
       .clear({ force: true })
-      .type(medName, { delay: 600, force: true }); 
+      .type(medName, { delay: 600, force: true });
 
     // Waiting for the dropdown results to populate from API
     cy.wait(3000);
@@ -1040,7 +1040,7 @@ class ChartPage {
         cy.wrap(specificDrug).first().click({ force: true });
       } else {
         cy.log(">>> Specific drug not found. Clicking 'Create as new medicine' option.");
-        
+
         // Target the 'Medicine' category and click the first 'Create as a new medicine' option
         cy.contains('div.autocomplete-option', /as a new medicine/i, { timeout: 10000 })
           .should('be.visible')
@@ -1079,22 +1079,46 @@ class ChartPage {
 
     cy.contains("button", /^SAVE$/i).click({ force: true });
     cy.contains(/ *updated.*successfully/i, { timeout: 20000 }).should("be.visible");
+    cy.contains(/ *updated.*successfully/i, { timeout: 20000 }).should("not.exist");
+    cy.contains("button", /^CLOSE$/i).click({ force: true });
+
     this.waitForLoaders();
 
     // --- DELETE PART ---
-    // Target specific row with updated text
-    cy.contains("#orders div", /COPAXONE/i).closest(".MuiPaper-root")
+    // Ensuring the edit mode is closed (as seen in your logs)
+    cy.get('body').then(($body) => {
+      if ($body.find('button:contains("CLOSE")').length > 0) {
+        cy.contains('button', /CLOSE/i).click({ force: true });
+        this.waitForLoaders();
+      }
+    });
+
+    // Targeting the row again to ensure fresh DOM reference
+    cy.contains("#orders div", /COPAXONE/i)
+      .closest(".MuiPaper-root")
       .filter(`:contains("${updatedDuration}")`)
-      .should("be.visible")
-      .within(() => {
-        cy.get(".MuiSvgIcon-colorError").should("be.visible").click({ force: true });
-      });
+      .as('medRowToDelete');
+
+    cy.get("@medRowToDelete").within(() => {
+      // Strategy: Look for any SVG that is inside the row
+      // We target the SVG directly and force click it to bypass aria-hidden issues
+      // Using a more generic selector for the trash icon based on its location
+      cy.get('svg', { timeout: 15000 })
+        .filter((index, el) => {
+          // Filter to find the red-colored icon (Delete icon color in MUI)
+          const color = Cypress.$(el).css('color') || Cypress.$(el).css('fill');
+          return color.includes('rgb(211, 47, 47)') || color.includes('red');
+        })
+        .first() // Select the first red icon found in this row
+        .should('exist') // Use 'exist' instead of 'visible' if aria-hidden is causing issues
+        .click({ force: true });
+    });
 
     // Handle Confirmation Modal
     cy.contains("Are you sure?", { timeout: 10000 }).should("be.visible");
-    cy.contains("button", "Yes, delete it!").click({ force: true });
+    cy.contains("button", "Yes, Delete").click({ force: true });
 
-    // Final Success OK button
+    // Final Success Verification
     cy.contains("medication has been removed.", { timeout: 20000 }).should("be.visible");
     cy.contains("button", "OK").click({ force: true });
     this.waitForLoaders();
@@ -1154,6 +1178,41 @@ class ChartPage {
 
     // Verification: Ensure the unique order appears in the list
     cy.contains(examName, { timeout: 20000 }).should("be.visible");
+
+
+    // --- UPDATE PART ---
+    const updatedExamName = "Updated Chest " + requisitionId;
+
+    // 1. Locate the specific order card and scroll to it
+    cy.contains("#orders .MuiPaper-root", examName, { timeout: 15000 })
+      .scrollIntoView()
+      .should("be.visible")
+      .as('targetOrderCard');
+
+    // 2. Click the Accordion Header to expand (This is the most stable way)
+    // Instead of looking for a specific SVG, we click the entire summary bar
+    cy.get('@targetOrderCard').find('.MuiAccordionSummary-root').click({ force: true });
+
+    // 3. Wait for the expansion animation to complete
+    cy.wait(2000);
+
+    // 4. Scoping the update actions inside the expanded section
+    cy.get('@targetOrderCard').within(() => {
+      // Look for the input field which should now be visible
+      cy.get('input[placeholder="Example: Chest"]', { timeout: 20000 })
+        .should('be.visible')
+        .clear({ force: true })
+        .type(updatedExamName, { force: true });
+
+      // ... rest of your update code (textarea, priority, save etc.) ...
+      cy.contains("button", /^SAVE$/i).click({ force: true });
+    });
+
+    // 5. Verification
+    cy.contains(/ *updated.*successfully/i, { timeout: 20000 }).should("be.visible");
+    cy.contains(/ *updated.*successfully/i, { timeout: 20000 }).should("not.exist");
+
+    this.waitForLoaders();
   }
 
 
@@ -1200,14 +1259,14 @@ class ChartPage {
   /**
    * Complete Creation for Lab Order (Requisition)
    */
-// Selectors for Progress Notes
+  // Selectors for Progress Notes
   get notesContainer() { return cy.get("#notes"); }
   get addNoteBtn() { return this.notesContainer.find(".chart-header button.MuiIconButton-colorPrimary"); }
 
   /**
    * Complete CRUD operation for Progress Notes (including Versioning)
    */
-  
+
   progressNoteCRUD() {
     const noteId = Math.floor(Math.random() * 1000);
     const updateId = Math.floor(Math.random() * 1000);
@@ -1220,7 +1279,7 @@ class ChartPage {
     // Fill Note Information (Header)
     cy.contains("Note Information").closest(".MuiBox-root").find("button").first().click({ force: true });
     cy.wait(2000); // Wait for modal animation
-    
+
     cy.contains("div", /Note Information/i).closest(".MuiBox-root").within(() => {
       cy.get("textarea, input").eq(0).clear({ force: true }).type("Follow-up session " + noteId, { force: true });
       cy.get("input").eq(1).clear({ force: true }).type("Daily Note " + noteId, { force: true });
@@ -1229,11 +1288,16 @@ class ChartPage {
     });
 
     cy.contains(/note.*successfully/i).should("be.visible");
+    cy.contains(/note.*successfully/i).should("not.exist");
     this.waitForLoaders();
 
     // Write in Monaco Editor
     cy.get(".monaco-editor", { timeout: 20000 }).first().click({ force: true })
       .find("textarea").first().type("Stable condition. Note ID: " + noteId, { force: true, delay: 10 });
+
+
+
+    cy.wait(5000);
 
     // Sign the Note
     cy.contains("button", /^SIGN & PRINT$/i).closest(".MuiBox-root").within(() => {
@@ -1245,8 +1309,11 @@ class ChartPage {
     this.notesContainer.contains("tr", "Daily Note " + noteId).within(() => {
       cy.contains("Signed", { timeout: 60000 }).should("be.visible");
     });
+    cy.contains(/note.*successfully/i).should("be.visible");
+    cy.contains(/note.*successfully/i).should("not.exist");
+    this.waitForLoaders();
 
-    // --- UPDATE (VERSIONING) PART ---
+    // --- UPDATE ---
     // Click edit icon for the signed note
     this.notesContainer.contains("tr", "Daily Note " + noteId).find('button[aria-label="edit"]').first().click({ force: true });
     this.waitForLoaders();
@@ -1256,6 +1323,8 @@ class ChartPage {
       cy.contains("button", /^EDIT$/i).click({ force: true });
     });
     cy.contains("button", /Confirm/i).click({ force: true });
+        cy.contains(/note.*successfully/i).should("be.visible");
+    cy.contains(/note.*successfully/i).should("not.exist");
     this.waitForLoaders();
 
     // Update Title for Version 2
@@ -1268,16 +1337,213 @@ class ChartPage {
     cy.get(".monaco-editor").first().click({ force: true }).find("textarea").first()
       .type(" - Updated for version 2. ID: " + updateId, { force: true, delay: 10 });
 
+cy.wait(5000);
+
     // Sign Version 2
     cy.contains("button", /^SIGN & PRINT$/i).closest(".MuiBox-root").within(() => {
-      cy.contains("button", /^SIGN$/i).click({ force: true });
+      cy.contains("button", /^SAVE$/i).click({ force: true });
     });
 
     this.waitForLoaders();
+            cy.contains(/note.*successfully/i).should("be.visible");
+    cy.contains(/note.*successfully/i).should("not.exist");
     // Final verification of status
     this.notesContainer.contains("tr", "Updated Note " + updateId).within(() => {
+      cy.contains("Unsigned", { timeout: 60000 }).should("be.visible");
+    });
+    cy.contains("button", /^SIGN & PRINT$/i).closest(".MuiBox-root").within(() => {
+      cy.contains("button", /^CLOSE$/i).click({ force: true });
+    });
+        this.waitForLoaders();
+
+
+    // --- DELETE PART ---
+    // 1. Locate the updated note row in the table
+    this.notesContainer.contains("tr", "Updated Note " + updateId)
+      .scrollIntoView()
+      .should("be.visible")
+      .as('noteRowToDelete');
+
+    // 2. Click the delete icon (trash icon) for this specific note
+    cy.get('@noteRowToDelete').within(() => {
+      // Targeting the red delete button
+      cy.get('button[aria-label="delete"], button[aria-label="Delete"]')
+        .filter('.MuiIconButton-colorError')
+        .should('be.visible')
+        .click({ force: true });
+    });
+
+    // 3. Handle the confirmation dialog
+    cy.contains("Are you sure?", { timeout: 10000 }).should("be.visible");
+    cy.contains("button", "Yes, delete it!").click({ force: true });
+
+    // 4. Verify success message and wait for UI to stabilize
+    cy.contains(/deleted.*successfully/i, { timeout: 20000 }).should("be.visible");
+        cy.contains(/deleted.*successfully/i, { timeout: 20000 }).should("not.exist");
+
+    this.waitForLoaders();
+
+    // 5. Verification: Ensure the deleted note title no longer exists in the table
+    this.notesContainer.should('not.contain', "Updated Note " + updateId);
+
+    
+  }
+
+  consultNoteCRUD() {
+    const noteId = Math.floor(Math.random() * 1000);
+    const updateId = Math.floor(Math.random() * 1000);
+
+    // --- CREATE PART ---
+    this.addNoteBtn.click({ force: true });
+    cy.contains("li", /New Consult Note/i, { timeout: 15000 }).click({ force: true });
+    this.waitForLoaders();
+
+// --- FILL REFERRING PROVIDER INFORMATION ---
+    // 1. Target the specific Referring Provider Information container
+    cy.contains("p", /Referring Provider Information/i)
+      .closest(".MuiBox-root")
+      .parent()
+      .within(() => {
+        // 2. Search for the contact
+        cy.get('input[placeholder="Search Contact"]')
+          .should("be.visible")
+          .clear({ force: true })
+          .type("mridul", { delay: 200, force: true });
+      });
+
+    // 3. Wait for the autocomplete dropdown to appear and select the first option
+    // Autocomplete list is usually outside the '.within' scope in the DOM
+    cy.get("li.autocomplete-option", { timeout: 15000 })
+      .first()
+      .should("be.visible")
+      .click({ force: true });
+
+    // 4. Click the SAVE button specifically belonging to the Referring Provider section
+    cy.contains("p", /Referring Provider Information/i)
+      .closest(".MuiBox-root")
+      .parent()
+      .parent()
+      .within(() => {
+        cy.contains("button", /^SAVE$/i).click({ force: true });
+      });
+
+
+
+    // 5. Verification and stability wait
+    cy.contains(/note.*successfully/i, { timeout: 20000 }).should("be.visible");
+    cy.contains(/note.*successfully/i, { timeout: 20000 }).should("not.exist");
+    this.waitForLoaders();
+
+    // Fill Note Information (Header)
+    cy.contains("Note Information").closest(".MuiBox-root").find("button").first().click({ force: true });
+    cy.wait(2000); // Wait for modal animation
+
+    cy.contains("div", /Note Information/i).closest(".MuiBox-root").within(() => {
+      cy.get("textarea, input").eq(0).clear({ force: true }).type("Follow-up session " + noteId, { force: true });
+      cy.get("input").eq(1).clear({ force: true }).type("Daily Consult Note " + noteId, { force: true });
+      cy.get("input").eq(2).clear({ force: true }).type("2026-02-03", { force: true });
+      cy.contains("button", /UPDATE/i).click({ force: true });
+    });
+
+    cy.contains(/note.*successfully/i).should("be.visible");
+    cy.contains(/note.*successfully/i).should("not.exist");
+    this.waitForLoaders();
+
+    // Write in Monaco Editor
+    cy.get(".monaco-editor", { timeout: 20000 }).first().click({ force: true })
+      .find("textarea").first().type("Stable condition. Note ID: " + noteId, { force: true, delay: 10 });
+
+
+
+    cy.wait(5000);
+
+    // Sign the Note
+    cy.contains("button", /^SIGN & PRINT$/i).closest(".MuiBox-root").within(() => {
+      cy.contains("button", /^SIGN$/i).should("be.visible").click({ force: true });
+    });
+
+    this.waitForLoaders();
+    // Verify "Signed" status in table
+    this.notesContainer.contains("tr", "Daily Consult Note " + noteId).within(() => {
       cy.contains("Signed", { timeout: 60000 }).should("be.visible");
     });
+    cy.contains(/note.*successfully/i).should("be.visible");
+    cy.contains(/note.*successfully/i).should("not.exist");
+    this.waitForLoaders();
+
+    // --- UPDATE ---
+    // Click edit icon for the signed note
+    this.notesContainer.contains("tr", "Daily Consult Note " + noteId).find('button[aria-label="edit"]').first().click({ force: true });
+    this.waitForLoaders();
+
+    // Trigger versioning
+    cy.contains("button", /^PRINT$/i).closest(".MuiBox-root").within(() => {
+      cy.contains("button", /^EDIT$/i).click({ force: true });
+    });
+    cy.contains("button", /Confirm/i).click({ force: true });
+        cy.contains(/note.*successfully/i).should("be.visible");
+    cy.contains(/note.*successfully/i).should("not.exist");
+    this.waitForLoaders();
+
+    // Update Title for Version 2
+    cy.contains("p", /Note Information/i).closest(".MuiBox-root").find("button").first().click({ force: true });
+    cy.wait(2000);
+    cy.contains("span", /Title/i).next().find("input").first().clear({ force: true }).type("Updated Consult Note " + updateId, { force: true });
+    cy.contains("button", /UPDATE/i).click({ force: true });
+
+    // Add content to Monaco for Version 2
+    cy.get(".monaco-editor").first().click({ force: true }).find("textarea").first()
+      .type(" - Updated for version 2. ID: " + updateId, { force: true, delay: 10 });
+
+cy.wait(5000);
+
+    // Sign Version 2
+    cy.contains("button", /^SIGN & PRINT$/i).closest(".MuiBox-root").within(() => {
+      cy.contains("button", /^SAVE$/i).click({ force: true });
+    });
+
+    this.waitForLoaders();
+            cy.contains(/note.*successfully/i).should("be.visible");
+    cy.contains(/note.*successfully/i).should("not.exist");
+    // Final verification of status
+    this.notesContainer.contains("tr", "Updated Consult Note " + updateId).within(() => {
+      cy.contains("Unsigned", { timeout: 60000 }).should("be.visible");
+    });
+    cy.contains("button", /^SIGN & PRINT$/i).closest(".MuiBox-root").within(() => {
+      cy.contains("button", /^CLOSE$/i).click({ force: true });
+    });
+        this.waitForLoaders();
+
+    // --- DELETE PART ---
+    // 1. Locate the updated consult note row in the table
+    this.notesContainer.contains("tr", "Updated Consult Note " + updateId)
+      .scrollIntoView()
+      .should("be.visible")
+      .as('noteRowToDelete');
+
+    // 2. Click the delete icon (trash icon) for this specific note
+    cy.get('@noteRowToDelete').within(() => {
+      // Targeting the red delete button
+      cy.get('button[aria-label="delete"], button[aria-label="Delete"]')
+        .filter('.MuiIconButton-colorError')
+        .should('be.visible')
+        .click({ force: true });
+    });
+
+    // 3. Handle the confirmation dialog
+    cy.contains("Are you sure?", { timeout: 10000 }).should("be.visible");
+    cy.contains("button", "Yes, delete it!").click({ force: true });
+
+    // 4. Verify success message and wait for UI to stabilize
+    cy.contains(/deleted.*successfully/i, { timeout: 20000 }).should("be.visible");
+        cy.contains(/deleted.*successfully/i, { timeout: 20000 }).should("not.exist");
+
+    this.waitForLoaders();
+
+    // 5. Verification: Ensure the deleted note title no longer exists in the table
+    this.notesContainer.should('not.contain', "Updated Consult Note " + updateId);
+
+    
   }
 
 }
