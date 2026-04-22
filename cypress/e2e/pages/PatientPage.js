@@ -4,7 +4,7 @@ class PatientPage {
   get newPatientBtn() { return cy.contains('button', /New Patient/i); }
   get patientDialog() { return cy.get('[role="dialog"]'); }
   get createSubmitBtn() { return cy.contains('button', /^Create$/i); }
-    get countryInput() { return cy.get('#country-select-demo'); }
+  get countryInput() { return cy.get('#country-select-demo'); }
   get provinceSelect() { return cy.contains('span', /Province \/ Territory/i).next().find('[role="combobox"]'); }
   get phnInput() { return cy.contains('span', /Personal Health Number/i).next().find('input').first(); }
   get dobInput() { return cy.contains('span', /Date Of Birth/i).next().find('input[type="date"]'); }

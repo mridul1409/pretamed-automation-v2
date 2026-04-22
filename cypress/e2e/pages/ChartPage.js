@@ -58,7 +58,8 @@ class ChartPage {
       cy.contains(/Note/i).parent().find("input, textarea").type(initialNote, { force: true });
     });
     cy.get('@dataRow').find("td").last().find("button").first().click({ force: true });
-    cy.contains(/created.*successfully/i).should("be.visible");
+    cy.contains(/created.*successfully/i, { timeout: 10000 }).should("be.visible");
+    cy.contains(/created.*successfully/i, { timeout: 10000 }).should("not.exist");
     this.waitForLoaders();
 
     // --- UPDATE ---
@@ -73,7 +74,8 @@ class ChartPage {
       cy.contains(/Note/i).parent().find("input, textarea").clear({ force: true }).type(updatedNote, { force: true });
     });
     cy.get("@noteRowUpdate").prev().find("td").last().find("button").first().click({ force: true });
-    cy.contains(/updated.*successfully/i).should("be.visible");
+    cy.contains(/updated.*successfully/i, { timeout: 10000 }).should("be.visible");
+    cy.contains(/updated.*successfully/i, { timeout: 10000 }).should("not.exist");
     this.waitForLoaders();
 
     // --- DELETE ---
@@ -82,7 +84,8 @@ class ChartPage {
       cy.get('button[aria-label="Delete"], button[aria-label="delete"]').click({ force: true });
     });
     cy.contains("button", "Yes, delete it!").click({ force: true });
-    cy.contains(/deleted.*successfully/i).should("be.visible");
+    cy.contains(/deleted.*successfully/i, { timeout: 10000 }).should("be.visible");
+    cy.contains(/deleted.*successfully/i, { timeout: 10000 }).should("not.exist");
     this.waitForLoaders();
   }
 
@@ -379,8 +382,6 @@ class ChartPage {
   // Selectors for Social History
   get socialHxContainer() { return cy.get("#socialHx"); }
   get addSocialBtn() { return this.socialHxContainer.find(".chart-header button.MuiIconButton-colorPrimary"); }
-
-
 
   /**
    * Complete CRUD operation for Environmental Allergy
@@ -1544,6 +1545,54 @@ class ChartPage {
     this.notesContainer.should('not.contain', "Updated Consult Note " + updateId);
 
 
+  }
+
+/**
+   * Creates a minimal progress note to enable the Billing button
+   */
+  createNoteForBilling() {
+    const noteId = Math.floor(Math.random() * 1000);
+    
+    // 1. Open the 'New Progress Note' menu
+    this.notesContainer.find(".chart-header button.MuiIconButton-colorPrimary").click({ force: true });
+    cy.contains("li", /New Progress Note/i, { timeout: 15000 }).click({ force: true });
+    // 1. Wait for the main editor container to be visible in the DOM
+    cy.get('.monaco-editor', { timeout: 30000 })
+      .should('be.visible');
+
+    // 2. Wait for the internal textarea (where we actually type) to exist
+    // This ensures that the editor's core logic is fully initialized
+    cy.get('.monaco-editor textarea', { timeout: 20000 })
+      .should('exist')
+      .as('monacoInput');
+    this.waitForLoaders();
+
+    // 2. Open and fill 'Note Information' (Header data)
+    cy.contains("Note Information").closest(".MuiBox-root").find("button").first().click({ force: true });
+    cy.wait(2000); // Buffer for modal animation
+
+    cy.contains("div", /Note Information/i).closest(".MuiBox-root").within(() => {
+      cy.get("textarea, input").eq(0).type("Billing session " + noteId, { force: true });
+      cy.get("input").eq(1).type("Billing Note " + noteId, { force: true });
+      cy.get("input").eq(2).type("2026-02-03", { force: true });
+      cy.contains("button", /UPDATE/i).click({ force: true });
+    });
+
+    // Verify header update success
+    cy.contains(/note.*successfully/i).should("be.visible");
+    cy.contains(/note.*successfully/i).should("not.exist");
+
+    this.waitForLoaders();
+
+    // 3. Click the BILLING button to initiate billing process
+    cy.contains("button", /^SIGN & PRINT$/i).closest(".MuiBox-root").within(() => {
+      cy.contains("button", /^BILLING$/i).should("be.visible").click({ force: true });
+    });
+
+        cy.contains('button', /Start a New Bill/i, { timeout: 30000 })
+      .should('be.visible');
+    
+    this.waitForLoaders();
   }
 
 }

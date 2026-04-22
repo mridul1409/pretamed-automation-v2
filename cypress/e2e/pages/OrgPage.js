@@ -43,6 +43,7 @@ class OrgPage {
   }
 
   switchOrganization(orgName) {
+    this.waitForLoaders();
     this.orgSwitcherBtn.should('be.visible').click({ force: true });
     cy.get('li[role="menuitem"]', { timeout: 60000 }).contains(orgName).click({ force: true });
     this.waitForLoaders();

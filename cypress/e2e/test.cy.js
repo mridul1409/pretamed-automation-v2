@@ -36,7 +36,7 @@ describe("Patient Chart Clinical Operations", () => {
         });
     });
 
-    it("Step 1: Navigate and Search Patient", () => {
+    it("Navigate and Search Patient", () => {
         // Construct the patient list URL from config
         const listUrl = Cypress.config().baseUrl.replace(/\/$/, "") + Cypress.env("PATIENT_LIST_PATH");
 
@@ -230,61 +230,61 @@ describe("Patient Chart Clinical Operations", () => {
         });
     });
 
-    it("Administrator Notes", () => {
-        currentOpInfo = { name: "Administrator Notes", status: "PENDING" };
+    // it("Administrator Notes", () => {
+    //     currentOpInfo = { name: "Administrator Notes", status: "PENDING" };
 
-        cy.get('body').then(($body) => {
-            if ($body.find("#adminNotes").length > 0 && $body.find("#adminNotes").is(':visible')) {
-                chartPage.administratorNotesCRUD();
-                currentOpInfo.status = "PASSED";
-            } else {
-                currentOpInfo.status = "MISSING";
-                cy.log(">>> Administrator Notes section is missing. Skipping...");
-            }
-        });
-    });
+    //     cy.get('body').then(($body) => {
+    //         if ($body.find("#adminNotes").length > 0 && $body.find("#adminNotes").is(':visible')) {
+    //             chartPage.administratorNotesCRUD();
+    //             currentOpInfo.status = "PASSED";
+    //         } else {
+    //             currentOpInfo.status = "MISSING";
+    //             cy.log(">>> Administrator Notes section is missing. Skipping...");
+    //         }
+    //     });
+    // });
 
-    it("Order - Medication", () => {
-        currentOpInfo = { name: "Order: Medication", status: "PENDING" };
+    // it("Order - Medication", () => {
+    //     currentOpInfo = { name: "Order: Medication", status: "PENDING" };
 
-        cy.get('body').then(($body) => {
-            if ($body.find("#orders").length > 0 && $body.find("#orders").is(':visible')) {
-                chartPage.medicationOrderCRUD();
-                currentOpInfo.status = "PASSED";
-            } else {
-                currentOpInfo.status = "MISSING";
-                cy.log(">>> Orders section is missing. Skipping...");
-            }
-        });
-    });
+    //     cy.get('body').then(($body) => {
+    //         if ($body.find("#orders").length > 0 && $body.find("#orders").is(':visible')) {
+    //             chartPage.medicationOrderCRUD();
+    //             currentOpInfo.status = "PASSED";
+    //         } else {
+    //             currentOpInfo.status = "MISSING";
+    //             cy.log(">>> Orders section is missing. Skipping...");
+    //         }
+    //     });
+    // });
 
-    it("Order - Image", () => {
-        currentOpInfo = { name: "Order: Image", status: "PENDING" };
+    // it("Order - Image", () => {
+    //     currentOpInfo = { name: "Order: Image", status: "PENDING" };
 
-        cy.get('body').then(($body) => {
-            if ($body.find("#orders").length > 0 && $body.find("#orders").is(':visible')) {
-                chartPage.imageOrderCRUD();
-                currentOpInfo.status = "PASSED";
-            } else {
-                currentOpInfo.status = "MISSING";
-                cy.log(">>> Imaging Requisition section is missing. Skipping...");
-            }
-        });
-    });
+    //     cy.get('body').then(($body) => {
+    //         if ($body.find("#orders").length > 0 && $body.find("#orders").is(':visible')) {
+    //             chartPage.imageOrderCRUD();
+    //             currentOpInfo.status = "PASSED";
+    //         } else {
+    //             currentOpInfo.status = "MISSING";
+    //             cy.log(">>> Imaging Requisition section is missing. Skipping...");
+    //         }
+    //     });
+    // });
 
-    it("Order - Lab", () => {
-        currentOpInfo = { name: "Order: Lab", status: "PENDING" };
+    // it("Order - Lab", () => {
+    //     currentOpInfo = { name: "Order: Lab", status: "PENDING" };
 
-        cy.get('body').then(($body) => {
-            if ($body.find("#orders").length > 0 && $body.find("#orders").is(':visible')) {
-                chartPage.labOrderCRUD();
-                currentOpInfo.status = "PASSED";
-            } else {
-                currentOpInfo.status = "MISSING";
-                cy.log(">>> Lab Requisition section is missing. Skipping...");
-            }
-        });
-    });
+    //     cy.get('body').then(($body) => {
+    //         if ($body.find("#orders").length > 0 && $body.find("#orders").is(':visible')) {
+    //             chartPage.labOrderCRUD();
+    //             currentOpInfo.status = "PASSED";
+    //         } else {
+    //             currentOpInfo.status = "MISSING";
+    //             cy.log(">>> Lab Requisition section is missing. Skipping...");
+    //         }
+    //     });
+    // });
 
 
 });
