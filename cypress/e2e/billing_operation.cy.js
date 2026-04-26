@@ -31,7 +31,7 @@ describe("Verification of Billing Note Creation", () => {
     });
   });
 
-  it("Step 1: Navigate to Patient Chart", () => {
+  it("Navigate to Patient Chart", () => {
     // konstrukt list URL and visit
     const listUrl = Cypress.config().baseUrl.replace(/\/$/, "") + Cypress.env("PATIENT_LIST_PATH");
     cy.visit(listUrl);
@@ -166,6 +166,38 @@ describe("Verification of Billing Note Creation", () => {
     billingPage.saveAndCloseBill(BILL_NOTE);
 
     // 6. Verification and Cleanup
+    billingPage.closeDrawerAndVerifyReturn();
+  });
+
+  it("Billing Operation: Bill To: ICBC", () => {
+    // Standard data for the ICBC billing form
+    const DATA_CENTER = "V0081";
+    const PAYEE = "12345 - Dr. Traideas Dev";
+    const DIAG_CODE = "432";
+    const SERVICE_CODE = "121";
+    const BILL_NOTE = "ICBC Automated Bill - " + uniqueId;
+    const ICBC_CLAIM = "ICBC-" + Math.floor(Math.random() * 1000000);
+
+    // 1. Create a note to enable billing button
+    chartPage.createNoteForBilling();
+
+    // 2. Initiate the billing process
+    billingPage.initiateNewBill();
+
+    // 3. Fill basic info as ICBC (Selecting ICBC from dropdown)
+    billingPage.fillBasicBillingInfo(DATA_CENTER, PAYEE, "ICBC", "FFS");
+
+    // 4. Fill ICBC specific Claim Number
+    billingPage.fillICBCClaim(ICBC_CLAIM);
+
+    // 5. Expand and fill additional Practitioner details (FFS style)
+    billingPage.fillFFSDetails();
+
+    // 6. Add service row and finalize the bill
+    billingPage.addServiceRow(DIAG_CODE, SERVICE_CODE, "1");
+    billingPage.saveAndCloseBill(BILL_NOTE);
+
+    // 7. Cleanup and verification
     billingPage.closeDrawerAndVerifyReturn();
   });
 

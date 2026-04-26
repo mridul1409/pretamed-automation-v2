@@ -62,12 +62,19 @@ class BillingPage {
         });
         cy.get('ul[role="listbox"]:visible li[role="option"]').contains(new RegExp(`^${billTo}$`)).click({ force: true });
 
-        // 4. Select Service Type (FFS/PBF/PP etc.)
-        cy.contains("button", /CHECK ELIGIBILITY/i).closest(".MuiBox-root").within(() => {
-            cy.get('[role="combobox"]').eq(1).should("be.visible").click({ force: true });
+        cy.contains("button", /CHECK ELIGIBILITY/i).closest(".MuiBox-root").then(($container) => {
+            const dropdown = $container.find('[role="combobox"]').eq(1);
+            
+            // Check if the dropdown is NOT disabled before interacting
+            if (!dropdown.hasClass('Mui-disabled')) {
+                cy.wrap(dropdown).should("be.visible").click({ force: true });
+                cy.get('ul[role="listbox"]:visible li[role="option"]', { timeout: 10000 })
+                  .contains(asType)
+                  .click({ force: true });
+            } else {
+                cy.log(`>>> 'as' type dropdown is disabled for ${billTo}. Skipping selection.`);
+            }
         });
-        cy.get('ul[role="listbox"]:visible li[role="option"]').contains(asType).click({ force: true });
-
         // 5. Select Service Location Code
         cy.get("@activeBillingForm").within(() => {
             // Find the dropdown by label and click to open
@@ -156,6 +163,21 @@ class BillingPage {
             // Fill Institution Number
             cy.contains(/Institution Number/i).parent().find('input, textarea').first()
                 .should('be.visible').clear({ force: true }).type(institutionNo, { force: true });
+        });
+    }
+
+
+    /**
+     * Fills the unique ICBC Claim Number field
+     */
+    fillICBCClaim(claimNumber) {
+        cy.get("@activeBillingForm").within(() => {
+            cy.contains(/ICBC Claim Number/i)
+              .closest('div[class*="MuiStack-root"]')
+              .find("input")
+              .should("be.visible")
+              .clear({ force: true })
+              .type(claimNumber, { force: true });
         });
     }
 
