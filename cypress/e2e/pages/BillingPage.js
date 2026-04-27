@@ -181,6 +181,37 @@ class BillingPage {
         });
     }
 
+    /**
+     * Fills specific fields for Workers' Compensation (WSBC) mode
+     */
+    fillWSBCFields(claimNum, injuryDate) {
+        cy.get("@activeBillingForm").within(() => {
+            // 1. WSBC Claim Num
+            cy.contains(/WSBC Claim Num/i).parent().find("input").clear({ force: true }).type(claimNum, { force: true });
+            
+            // 2. WSBC Date of Injury
+            cy.contains(/WSBC Date of Injury/i).parent().find("input").clear({ force: true }).type(injuryDate, { force: true });
+
+            // 3. Anatomical Position (Dropdown)
+            cy.contains(/Anatomical Position/i).parent().find('[role="combobox"]').click({ force: true });
+        });
+
+        // Select first option from global listbox
+        cy.get('ul[role="listbox"]:visible li[role="option"]').first().click({ force: true });
+
+        // 4. Area of Injury (with autocomplete)
+        cy.get("@activeBillingForm").within(() => {
+            cy.contains(/WSBC Area of Injury/i).parent().find("input").type("231", { force: true });
+        });
+        cy.get("ul.autocomplete-options li.autocomplete-option", { timeout: 15000 }).first().click({ force: true });
+
+        // 5. Nature of Injury (with autocomplete)
+        cy.get("@activeBillingForm").within(() => {
+            cy.contains(/WSBC Nature of Injury/i).parent().find("input").type("424", { force: true });
+        });
+        cy.get("ul.autocomplete-options li.autocomplete-option", { timeout: 15000 }).first().click({ force: true });
+    }
+
 
     addServiceRow(diag, service, units = "1") {
         // Updated Targeting: Use the 'SUMMARY' text as an anchor to find the table container

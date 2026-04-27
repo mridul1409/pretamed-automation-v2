@@ -1,6 +1,7 @@
 import orgPage from "./pages/OrgPage";
 import chartPage from "./pages/ChartPage";
 import billingPage from "./pages/BillingPage";
+import billingDashboardPage from "./pages/BillingDashboardPage";
 
 describe("Verification of Billing Note Creation", () => {
   let serialNumber = 1;
@@ -9,7 +10,7 @@ describe("Verification of Billing Note Creation", () => {
   // Test data for verification
   const TEST_DATA = {
     targetOrg: "ABC",
-    targetPatient: "Kidd, James"
+    targetPatient: "Kidd, James",
   };
 
   before(() => {
@@ -17,7 +18,7 @@ describe("Verification of Billing Note Creation", () => {
     cy.task("initOperationReport", {
       title: "Billing Note Verification",
       url: Cypress.config().baseUrl + Cypress.env("PATIENT_CHART_PATH"),
-      mode: "new"
+      mode: "new",
     });
   });
 
@@ -27,18 +28,25 @@ describe("Verification of Billing Note Creation", () => {
       sn: serialNumber++,
       name: this.currentTest.title,
       status: this.currentTest.state.toUpperCase(),
-      errorLog: this.currentTest.err ? this.currentTest.err.message : "No errors detected",
+      errorLog: this.currentTest.err
+        ? this.currentTest.err.message
+        : "No errors detected",
     });
   });
 
   it("Navigate to Patient Chart", () => {
     // konstrukt list URL and visit
-    const listUrl = Cypress.config().baseUrl.replace(/\/$/, "") + Cypress.env("PATIENT_LIST_PATH");
+    const listUrl =
+      Cypress.config().baseUrl.replace(/\/$/, "") +
+      Cypress.env("PATIENT_LIST_PATH");
     cy.visit(listUrl);
 
     // Switch org and enter patient chart
     orgPage.switchOrganization(TEST_DATA.targetOrg);
-    chartPage.navigateToPatientChart(TEST_DATA.targetOrg, TEST_DATA.targetPatient);
+    chartPage.navigateToPatientChart(
+      TEST_DATA.targetOrg,
+      TEST_DATA.targetPatient,
+    );
   });
 
   it("Create a new clinical note for billing", () => {
@@ -46,7 +54,9 @@ describe("Verification of Billing Note Creation", () => {
     chartPage.createNoteForBilling();
 
     // Final check: Verify if the 'Start a New Bill' button is visible after the method runs
-    cy.contains("button", /Start a New Bill/i, { timeout: 30000 }).should("be.visible");
+    cy.contains("button", /Start a New Bill/i, { timeout: 30000 }).should(
+      "be.visible",
+    );
   });
 
   it("Billing Operation: Bill To: MSP as FFS", () => {
@@ -72,7 +82,6 @@ describe("Verification of Billing Note Creation", () => {
     billingPage.saveAndCloseBill(BILL_NOTE);
 
     billingPage.closeDrawerAndVerifyReturn();
-
   });
 
   it("Billing Operation: Bill To: MSP as PBF", () => {
@@ -199,6 +208,49 @@ describe("Verification of Billing Note Creation", () => {
 
     // 7. Cleanup and verification
     billingPage.closeDrawerAndVerifyReturn();
+  });
+
+  it("Billing Operation: Bill To: WSBC", () => {
+    // Standard data for the WSBC billing form
+    const DATA_CENTER = "V0081";
+    const PAYEE = "12345 - Dr. Traideas Dev";
+    const DIAG_CODE = "432";
+    const SERVICE_CODE = "121";
+    const BILL_NOTE = "WSBC Automated Bill - " + uniqueId;
+    const WSBC_CLAIM = "WSBC-" + Math.floor(Math.random() * 1000000);
+    const INJURY_DATE = "2026-02-01";
+
+    // 1. Setup: Create a note for billing
+    chartPage.createNoteForBilling();
+    billingPage.initiateNewBill();
+
+    // 2. Fill basic info as WSBC
+    billingPage.fillBasicBillingInfo(DATA_CENTER, PAYEE, "WSBC", "FFS");
+
+    // 3. Fill WSBC specific fields
+    billingPage.fillWSBCFields(WSBC_CLAIM, INJURY_DATE);
+
+    // 4. Expand and fill additional Practitioner details (FFS style)
+    billingPage.fillFFSDetails();
+
+    // 5. Add service row in the summary table
+    billingPage.addServiceRow(DIAG_CODE, SERVICE_CODE, "1");
+
+    // 6. Save and finalize
+    billingPage.saveAndCloseBill(BILL_NOTE);
+
+    // 7. Cleanup and verify return to chart
+    billingPage.closeDrawerAndVerifyReturn();
+  });
+
+  it("Teleplan Settings: Run Login Test", () => {
+    // 1. Navigate to Dashboard using POM
+    billingDashboardPage.navigateToDashboard();
+
+    // 2. Execute Login Test flow and verify success
+    billingDashboardPage.runTeleplanLoginTest();
+
+    cy.log(">>> Teleplan Login Test completed successfully.");
   });
 
   after(() => {
