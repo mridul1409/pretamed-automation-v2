@@ -10,8 +10,8 @@ describe("Patient Chart Clinical Operations", () => {
     const TARGET_PATIENT = Cypress.env("TARGET_PATIENT_NAME");
 
     const TEST_DATA = {
-        targetOrg: "ABC",
-        targetPatient: "Kidd, James"
+        targetOrg: "Alpha Clinic",
+        targetPatient: "Test, Version"
     };
 
     before(() => {
