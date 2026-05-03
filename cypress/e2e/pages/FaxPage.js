@@ -247,6 +247,76 @@ class FaxPage {
 
     cy.log(">>> Task found via search filter and verified: " + taskData.title);
   }
+
+  /**
+   * Updates Task Title, Status, and Priority, then verifies auto-save in table
+   */
+  updateTaskTitle(existingTitle, newTitle) {
+    // 1. Open the task from table
+    cy.get("table tbody")
+      .contains("p", existingTitle)
+      .should("be.visible")
+      .click({ force: true });
+    this.waitForLoaders();
+
+    // 2. Trigger Edit Mode for Title
+    cy.get("h6.MuiTypography-subtitle1")
+      .contains(existingTitle)
+      .should("be.visible")
+      .click({ force: true });
+
+    // 3. COMBINE ACTIONS: Clear and Type the NEW title
+    cy.contains("p", /Title \*/i)
+      .parent()
+      .find("input", { timeout: 15000 })
+      .should("be.visible")
+      .clear({ force: true })
+      .type(newTitle, { force: true });
+
+    // 4. SAVE the Title
+    cy.contains("button", /^SAVE$/i)
+      .should("be.visible")
+      .click({ force: true });
+    this.waitForLoaders();
+
+    // 5. Verification: Check if the header now contains the NEW Title (Not the old one)
+    // This is where the previous error occurred
+    cy.get("h6.MuiTypography-subtitle1", { timeout: 20000 })
+      .contains(newTitle) // Fixed: Now checking for the updated string
+      .should("be.visible");
+
+    cy.log(">>> Title successfully updated and verified as: " + newTitle);
+    // Now for Status and Priority (as requested previously)
+    cy.contains("p", /^Status$/i)
+      .parent()
+      .find("button")
+      .first()
+      .click({ force: true });
+    cy.get('li[role="menuitem"], li[role="option"]')
+      .contains(/In Progress/i)
+      .click({ force: true });
+    this.waitForLoaders();
+    cy.wait(4000);
+
+    cy.contains("p", /^Priority$/i)
+      .parent()
+      .contains("button", /Urgent/i)
+      .click({ force: true });
+    this.waitForLoaders();
+    cy.wait(3000);
+    // Final Search and Verify
+    this.taskSearchInput
+      .should("be.visible")
+      .clear({ force: true })
+      .type(newTitle, { force: true });
+    this.waitForLoaders();
+
+    cy.get("table tbody", { timeout: 30000 })
+      .contains("tr", newTitle)
+      .should("be.visible");
+
+    cy.log(">>> Task updated and auto-save verified successfully.");
+  }
 }
 
 export default new FaxPage();
