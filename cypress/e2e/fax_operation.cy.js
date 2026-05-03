@@ -38,37 +38,37 @@ describe("Fax Operations Workflow", () => {
     faxPage.waitForLoaders();
   });
 
-//   it("Step 2: Create Fax Contact via User Profile", () => {
-//     faxPage.openFaxContactModal();
-//     faxPage.addNewBtn.click({ force: true });
+  it("Step 2: Create Fax Contact via User Profile", () => {
+    faxPage.openFaxContactModal();
+    faxPage.addNewBtn.click({ force: true });
 
-//     // Fill form with unique fax data
-//     faxPage.fillContactForm(CONTACT_INFO, uniqueFax);
+    // Fill form with unique fax data
+    faxPage.fillContactForm(CONTACT_INFO, uniqueFax);
 
-//     // Verification
-//     cy.contains(/ *created.*successfully/i, { timeout: 30000 }).should(
-//       "be.visible",
-//     );
-//     faxPage.verifyContactVisible(uniqueFax, CONTACT_INFO.name);
-//     faxPage.waitForLoaders();
-//   });
+    // Verification
+    cy.contains(/ *created.*successfully/i, { timeout: 30000 }).should(
+      "be.visible",
+    );
+    faxPage.verifyContactVisible(uniqueFax, CONTACT_INFO.name);
+    faxPage.waitForLoaders();
+  });
 
-//   it("Step 3: Verify Inbox and Queued Tabs", () => {
-//     faxPage.closeModal();
+  it("Step 3: Verify Inbox and Queued Tabs", () => {
+    faxPage.closeModal();
 
-//     // Check Inbox
-//     faxPage.inboxTab.click({ force: true });
-//     faxPage.refreshBtn.click({ force: true });
-//     faxPage.waitForLoaders();
-//     cy.contains("From Fax").should("be.visible");
+    // Check Inbox
+    faxPage.inboxTab.click({ force: true });
+    faxPage.refreshBtn.click({ force: true });
+    faxPage.waitForLoaders();
+    cy.contains("From Fax").should("be.visible");
 
-//     // Check Queued
-//     faxPage.queuedTab.click({ force: true });
-//     faxPage.refreshBtn.click({ force: true });
-//     faxPage.waitForLoaders();
-//     cy.contains("Recipient").should("be.visible");
-//     faxPage.waitForLoaders();
-//   });
+    // Check Queued
+    faxPage.queuedTab.click({ force: true });
+    faxPage.refreshBtn.click({ force: true });
+    faxPage.waitForLoaders();
+    cy.contains("Recipient").should("be.visible");
+    faxPage.waitForLoaders();
+  });
 
 it("Step 4: Navigate to Task Manager within Fax Module", () => {
     // 1. Define the data to be used for task creation
@@ -92,7 +92,6 @@ it("Step 4: Navigate to Task Manager within Fax Module", () => {
     faxPage.fillTaskFormAndCreate(TASK_DATA);
 
     // 5. Success verification
-    // cy.contains(/task.*created.*successfully/i, { timeout: 30000 }).should('be.visible');
     cy.log(">>> Task created successfully and verified.");
 
   });
