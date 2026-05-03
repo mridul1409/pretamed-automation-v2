@@ -70,33 +70,30 @@ describe("Fax Operations Workflow", () => {
     faxPage.waitForLoaders();
   });
 
-it("Step 4: Navigate to Task Manager within Fax Module", () => {
-    // 1. Define the data to be used for task creation
+it("Step 4: Create a New Task and Perform Dynamic Updates", () => {
+    const uniqueId = Date.now();
+    const initialTitle = "Automated Task " + uniqueId;
+    const updatedTitle = "Updated Title " + uniqueId;
+    
     const TASK_DATA = {
-        title: "Automated Task " + Date.now(),
-        description: "Testing task creation via Cypress automation.",
-        assignee: "mridul", // Name to search in assignee dropdown
-        patient: "remon"    // Name to search in patient dropdown
+        title: initialTitle,
+        description: "Initial task setup.",
+        assignee: "mridul",
+        patient: "remon"
     };
 
-    // 2. Switching to Task Manager view
     faxPage.navigateToTasks();
-    cy.log(">>> Task Manager loaded.");
-
-    // 3. Clicking CREATE TASK button and waiting for the form header
     faxPage.openCreateTaskForm();
-    cy.log(">>> Create New Task form is now visible.");
-
-    // 4. Entering all information and clicking CREATE
-    // Now TASK_DATA is defined and can be passed as an argument
     faxPage.fillTaskFormAndCreate(TASK_DATA);
-
-    // 5. Success verification
-    cy.log(">>> Task created successfully and verified.");
-
+    
+    // Perform update and verification (No description update)
+    faxPage.updateTaskTitle(initialTitle, updatedTitle);
   });
 
   after(() => {
-    cy.log(">>> FAX OPERATIONS JOURNEY COMPLETED! ✅");
+    // Wrapping in cy.then to ensure the previous chain is finished
+    cy.then(() => {
+      cy.log(">>> FAX OPERATIONS JOURNEY COMPLETED! ✅");
+    });
   });
 });
