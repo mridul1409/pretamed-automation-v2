@@ -129,6 +129,10 @@ class FaxPage {
   get createTaskBtn() {
     return cy.contains("button", /CREATE TASK/i);
   }
+  // Selector for Task Table Search Input
+  get taskSearchInput() {
+    return cy.get('input[placeholder="Search..."]').first();
+  }
 
   /**
    * Switches to the Task Manager view within the current Fax module
@@ -182,8 +186,6 @@ class FaxPage {
       .contains("button", /High/i) // Finds the 'High' button within that specific container
       .click({ force: true });
 
-    // Select Status from the form
-    // Select Status from the form
     // 1. Find the button containing the text 'Todo' within the Status section and click it
     cy.contains("p", /^Status$/i)
       .parent()
@@ -229,15 +231,21 @@ class FaxPage {
     cy.contains("button", /^CREATE$/i)
       .should("be.enabled")
       .click({ force: true });
-
     this.waitForLoaders();
-    // 7. Verification: Check if the new task title is visible in the task table
-    cy.get("table tbody", { timeout: 30000 })
+
+    // 7. Verification using Search Filter Strategy
+    this.taskSearchInput
+      .should("be.visible")
+      .clear({ force: true })
+      .type(taskData.title, { force: true });
+    this.waitForLoaders();
+
+    // Now verify the task exists in the filtered results
+    cy.get("table tbody", { timeout: 20000 })
       .contains("p", taskData.title)
-      .scrollIntoView()
       .should("be.visible");
 
-    cy.log(">>> Task stored and verified in table: " + taskData.title);
+    cy.log(">>> Task found via search filter and verified: " + taskData.title);
   }
 }
 
