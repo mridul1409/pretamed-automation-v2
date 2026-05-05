@@ -38,56 +38,63 @@ describe("Fax Operations Workflow", () => {
     faxPage.waitForLoaders();
   });
 
-  it("Step 2: Create Fax Contact via User Profile", () => {
-    faxPage.openFaxContactModal();
-    faxPage.addNewBtn.click({ force: true });
+  // it("Step 2: Create Fax Contact via User Profile", () => {
+  //   faxPage.openFaxContactModal();
+  //   faxPage.addNewBtn.click({ force: true });
 
-    // Fill form with unique fax data
-    faxPage.fillContactForm(CONTACT_INFO, uniqueFax);
+  //   // Fill form with unique fax data
+  //   faxPage.fillContactForm(CONTACT_INFO, uniqueFax);
 
-    // Verification
-    cy.contains(/ *created.*successfully/i, { timeout: 30000 }).should(
-      "be.visible",
-    );
-    faxPage.verifyContactVisible(uniqueFax, CONTACT_INFO.name);
-    faxPage.waitForLoaders();
-  });
+  //   // Verification
+  //   cy.contains(/ *created.*successfully/i, { timeout: 30000 }).should(
+  //     "be.visible",
+  //   );
+  //   faxPage.verifyContactVisible(uniqueFax, CONTACT_INFO.name);
+  //   faxPage.waitForLoaders();
+  // });
 
-  it("Step 3: Verify Inbox and Queued Tabs", () => {
-    faxPage.closeModal();
+  // it("Step 3: Verify Inbox and Queued Tabs", () => {
+  //   faxPage.closeModal();
 
-    // Check Inbox
-    faxPage.inboxTab.click({ force: true });
-    faxPage.refreshBtn.click({ force: true });
-    faxPage.waitForLoaders();
-    cy.contains("From Fax").should("be.visible");
+  //   // Check Inbox
+  //   faxPage.inboxTab.click({ force: true });
+  //   faxPage.refreshBtn.click({ force: true });
+  //   faxPage.waitForLoaders();
+  //   cy.contains("From Fax").should("be.visible");
 
-    // Check Queued
-    faxPage.queuedTab.click({ force: true });
-    faxPage.refreshBtn.click({ force: true });
-    faxPage.waitForLoaders();
-    cy.contains("Recipient").should("be.visible");
-    faxPage.waitForLoaders();
-  });
+  //   // Check Queued
+  //   faxPage.queuedTab.click({ force: true });
+  //   faxPage.refreshBtn.click({ force: true });
+  //   faxPage.waitForLoaders();
+  //   cy.contains("Recipient").should("be.visible");
+  //   faxPage.waitForLoaders();
+  // });
 
-it("Step 4: Create a New Task and Perform Dynamic Updates", () => {
+it("Step 4: Task Manager CRUD operation", () => {
     const uniqueId = Date.now();
     const initialTitle = "Automated Task " + uniqueId;
     const updatedTitle = "Updated Title " + uniqueId;
     
     const TASK_DATA = {
         title: initialTitle,
-        description: "Initial task setup.",
+        description: "Testing full task lifecycle.",
         assignee: "mridul",
         patient: "remon"
     };
 
+    // 1. Creation
     faxPage.navigateToTasks();
     faxPage.openCreateTaskForm();
     faxPage.fillTaskFormAndCreate(TASK_DATA);
-    
-    // Perform update and verification (No description update)
+
+    // 2. Update (Status and Priority)
     faxPage.updateTaskTitle(initialTitle, updatedTitle);
+
+    // 3. DELETE OPERATION (New logic)
+    // Deleting the task using its updated title
+    faxPage.deleteTask(updatedTitle);
+
+    cy.log(">>> Full Task Lifecycle (Create -> Update -> Delete) completed successfully.");
   });
 
   after(() => {

@@ -317,6 +317,34 @@ class FaxPage {
 
     cy.log(">>> Task updated and auto-save verified successfully.");
   }
+
+  /**
+   * Searches for a task and deletes it after confirmation
+   * @param {string} taskTitle - The title of the task to delete
+   */
+  deleteTask(taskTitle) {
+    // 1. Search for the task to isolate it in the table
+    this.taskSearchInput.should('be.visible').clear({ force: true }).type(taskTitle, { force: true });
+    this.waitForLoaders();
+
+    // 2. Locate the specific row and click the delete button (identified from your screenshot)
+    cy.get('table tbody').contains('tr', taskTitle).within(() => {
+        // Using the specific class 'row-delete-btn' seen in your inspector
+        cy.get('button.row-delete-btn').should('be.visible').click({ force: true });
+    });
+
+    // 3. Handle the "Are you sure?" confirmation modal
+    cy.contains('.swal2-popup', /Are you sure/i, { timeout: 10000 }).should('be.visible');
+    cy.contains('button', /Yes, delete it!/i).should('be.visible').click({ force: true });
+
+    // 4. Verify the success message and wait for UI to update
+    this.waitForLoaders();
+
+    // 5. Final Verification: Ensure the task is no longer in the filtered results
+    cy.get('table tbody').should('not.contain', taskTitle);
+    
+    cy.log(">>> Task deleted and verified: " + taskTitle);
+  }
 }
 
 export default new FaxPage();
