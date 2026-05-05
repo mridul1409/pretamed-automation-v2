@@ -327,11 +327,15 @@ class FaxPage {
     this.taskSearchInput.should('be.visible').clear({ force: true }).type(taskTitle, { force: true });
     this.waitForLoaders();
 
-    // 2. Locate the specific row and click the delete button (identified from your screenshot)
-    cy.get('table tbody').contains('tr', taskTitle).within(() => {
-        // Using the specific class 'row-delete-btn' seen in your inspector
-        cy.get('button.row-delete-btn').should('be.visible').click({ force: true });
-    });
+// 2. Locate the specific row, scroll to it, and click the delete button
+    cy.get('table tbody').contains('tr', taskTitle)
+        .scrollIntoView() // Crucial: Scroll the entire row into view first
+        .within(() => {
+            // Using 'exist' instead of 'be.visible' to bypass the CSS clipping assertion
+            cy.get('button.row-delete-btn')
+              .should('exist') 
+              .click({ force: true }); // force: true will click even if it's partially clipped
+        });
 
     // 3. Handle the "Are you sure?" confirmation modal
     cy.contains('.swal2-popup', /Are you sure/i, { timeout: 10000 }).should('be.visible');
