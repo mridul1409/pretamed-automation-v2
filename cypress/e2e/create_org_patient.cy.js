@@ -13,7 +13,11 @@ describe("Complete Patient Onboarding Workflow", () => {
         type: "Hospital", rooms: "6", beds: "20", country: "Canada",
         address: "3359 Maynard Rd", city: "Vancouver", state: "Nunavut",
         postalCode: "3433", phone: "1 (111) 111-1111", fax: "(222) 222-2222",
-        emergencyPhone: "(333) 333-3333", email: "demo@email.com"
+        emergencyPhone: "(333) 333-3333", email: "demo@email.com",
+        phone: "16045550111",
+        fax: "16045550222",
+        emergencyPhone: "16045550333",
+        email: "demo@email.com"
     };
 
     const PATIENT_DATA = {
@@ -44,11 +48,7 @@ describe("Complete Patient Onboarding Workflow", () => {
         orgPage.navigateToOrg();
         orgPage.createOrgBtn.click({ force: true });
         orgPage.fillOrgForm(ORG_DATA, newOrgName, newOrgUniqId);
-        orgPage.waitForLoaders();
-        const expectedUrl = Cypress.config().baseUrl.replace(/\/$/, "") + Cypress.env('ORG_PATH');
-        cy.url({ timeout: 60000 }).should("eq", expectedUrl);
-        orgPage.waitForLoaders();
-
+        orgPage.verifyOrgCreated(newOrgName);
     });
 
     it("Step 2: Create New Patient under New Org", () => {
