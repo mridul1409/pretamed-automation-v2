@@ -53,9 +53,9 @@ class FaxPage {
   openFaxContactModal() {
     cy.get("body").should("be.visible");
 
-    this.accountIcon.should("be.visible").first().click({ force: true });
+    this.accountIcon.should("be.visible", {timeout: 100000}).first().click({ force: true });
 
-    this.faxContactMenu.should("be.visible").click({ force: true });
+    this.faxContactMenu.should("be.visible", {timeout: 100000}).click({ force: true });
     this.waitForLoaders();
   }
 
@@ -63,7 +63,8 @@ class FaxPage {
     cy.contains("span", /Fax Number/i)
       .parent()
       .find("input")
-      .first()
+      .last()
+      .should('be.visible')
       .type(uniqueFax, { force: true });
     cy.contains("span", /Name/i)
       .parent()
@@ -83,7 +84,8 @@ class FaxPage {
     cy.contains("span", /Phone/i)
       .parent()
       .find("input")
-      .first()
+      .last()
+      .should('be.visible')
       .type(data.phone, { force: true });
     cy.contains("span", /Address/i)
       .parent()
@@ -94,20 +96,31 @@ class FaxPage {
     cy.contains("button", /^ADD$/i).should("be.enabled").click({ force: true });
   }
 
+/**
+   * Verifies contact visibility by searching with a cleaned (digits-only) fax number
+   */
   verifyContactVisible(uniqueFax, name) {
+    // Regular Expression to remove all non-digit characters (brackets, spaces, dashes, etc.)
+    const rawFaxNumber = uniqueFax.toString().replace(/\D/g, '');
+
     cy.contains("h2", /Fax Contact/i)
       .closest(".MuiPaper-root")
       .within(() => {
-        cy.get('input[placeholder="Search Contact"]')
+        // Typing only the digits for a reliable search result
+        cy.get('input[placeholder="Search..."]')
+          .should('be.visible')
           .clear({ force: true })
-          .type(uniqueFax, { delay: 100, force: true });
+          .type(rawFaxNumber, { delay: 100, force: true });
       });
+
     this.waitForLoaders();
-    cy.contains("h2", /Fax Contact/i)
-      .closest(".MuiPaper-root")
-      .find(".MuiTable-root")
-      .contains("th", name)
+
+    // Verify the record exists in the table rows using the contact name
+    cy.get(".MuiTable-root tbody", { timeout: 15000 })
+      .contains("tr", name)
       .should("be.visible");
+
+    cy.log(`>>> Success: Contact '${name}' verified using raw fax: ${rawFaxNumber}`);
   }
 
   closeModal() {

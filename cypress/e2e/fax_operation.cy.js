@@ -2,7 +2,7 @@ import faxPage from "./pages/FaxPage";
 
 describe("Fax Operations Workflow", () => {
   let serialNumber = 1;
-  const uniqueFax = "1" + Math.floor(100000000 + Math.random() * 900000000);
+const uniqueFax = "1" + Math.floor(1000000000 + Math.random() * 9000000000);
 
   const CONTACT_INFO = {
     name: "Mridul",
@@ -34,7 +34,7 @@ describe("Fax Operations Workflow", () => {
   it("Step 1: Navigate to Fax Inbox Page", () => {
     faxPage.navigateToFax();
     cy.url().should("include", "/inbox");
-    cy.contains("button", /COMPOSE/i, { timeout: 30000 }).should("be.visible");
+    cy.contains("button", /CREATE TASK/i, { timeout: 30000 }).should("be.visible");
     faxPage.waitForLoaders();
   });
 
