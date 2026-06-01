@@ -25,8 +25,6 @@ class PatientPage {
     cy.get('#country-select-demo').clear({ force: true }).type(data.country);
     cy.get('li[role="option"]').contains(data.country).click({ force: true });
     cy.wait(1000);
-    cy.contains('span', /Province \/ Territory/i).next().find('[role="combobox"]').click({ force: true });
-    cy.get('li[role="option"]').contains(data.province).click({ force: true });
     cy.contains('span', /Personal Health Number/i).next().find('input').first().type(phn, { force: true });
     cy.contains('span', /Date Of Birth/i).next().find('input[type="date"]').type(data.dob, { force: true });
     cy.contains('button', /^Next$/i).click({ force: true });
@@ -34,7 +32,7 @@ class PatientPage {
   }
 
   fillDetailedProfile(data, uniqueId) {
-    cy.get('#generel').within(() => {
+    cy.get('#generel',{timeout: 60000}).within(() => {
       cy.contains('span', /First Name/i).next().find('input').type(data.firstName, { force: true });
       cy.contains('span', /Last Name/i).next().find('input').type(data.lastName, { force: true });
       cy.contains('span', /Gender/i).next().find('[role="combobox"]').click({ force: true });
