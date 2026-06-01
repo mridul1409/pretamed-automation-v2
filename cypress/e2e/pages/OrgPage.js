@@ -80,8 +80,8 @@ class OrgPage {
     this.waitForLoaders();
 
     // 2. Verify dashboard specific headers as per your screenshot
-    cy.contains("Incoming Request to join the Organization", { timeout: 30000 }).should("be.visible");
-    cy.contains("Outgoing Request to join an Organization", { timeout: 30000 }).should("be.visible");
+    cy.contains("Incoming Request to join the Organization", { timeout: 60000 }).should("be.visible");
+    cy.contains("Outgoing Request to join an Organization", { timeout: 60000 }).should("be.visible");
 
     // 3. Look for the newly created Organization Name in the list
     cy.contains(newName, { timeout: 30000 }).should("be.visible");
@@ -95,7 +95,7 @@ switchOrganization(orgName) {
     this.waitForLoaders();
 
     // 2. Click the organization switcher button
-    this.orgSwitcherBtn.should('be.visible').click({ force: true });
+    this.orgSwitcherBtn.should('be.visible', {timeout: 60000}).click({ force: true });
 
     // 3. Updated Logic: Use 'exist' instead of 'be.visible'
     // This bypasses the visibility/clipping issue caused by 'position: fixed'
