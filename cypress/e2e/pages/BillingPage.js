@@ -286,8 +286,6 @@ class BillingPage {
   }
 
   addServiceRow(diag, service, units = "1") {
-    // Updated Targeting: Use the 'SUMMARY' text as an anchor to find the table container
-    // This is much more stable than using .parent().parent()
     cy.contains("div", /Diag Code/i)
       .closest(".MuiBox-root")
       .as("diagCodeSection");
@@ -343,10 +341,9 @@ class BillingPage {
    * Uses a stable anchor to avoid Detached DOM errors.
    */
   saveAndCloseBill(note) {
-    // Strategy: Locate the save button area directly using a unique text anchor
     cy.contains("button", /SAVE & SEND TOTAL BILL/i)
-      .closest(".MuiBox-root") // Finding the footer box
-      .parent() // Accessing the main container scope for note and save button
+      .closest(".MuiBox-root")
+      .parent()
       .within(() => {
         // Fill the Note field
         cy.contains("span", /Note:/i)
