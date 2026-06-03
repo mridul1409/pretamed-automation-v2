@@ -6,7 +6,7 @@ class BaseAPI {
         const cookie = Cypress.env("sessionCookie");
         return {
             "Content-Type": "application/json",
-            "Cookie": `connect.sid=${cookie}`, // Injects the connect.sid cookie
+            "Cookie": `connect.sid=${cookie}`,
             "Accept": "application/json"
         };
     }

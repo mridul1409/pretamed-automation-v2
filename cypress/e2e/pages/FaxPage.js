@@ -139,6 +139,7 @@ class FaxPage {
   get taskTab() {
     return cy.get('div[aria-label="TASK"]');
   }
+  
   get createTaskBtn() {
     return cy.contains("button", /CREATE TASK/i);
   }

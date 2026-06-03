@@ -89,21 +89,20 @@ class OrgPage {
     this.waitForLoaders();
   }
 
-switchOrganization(orgName) {
+  switchOrganization(orgName) {
     // 1. Hard reload to refresh the list
     cy.reload();
     this.waitForLoaders();
 
     // 2. Click the organization switcher button
-    this.orgSwitcherBtn.should('be.visible', {timeout: 60000}).click({ force: true });
+    this.orgSwitcherBtn.should('be.visible', { timeout: 60000 }).click({ force: true });
 
     // 3. Updated Logic: Use 'exist' instead of 'be.visible'
-    // This bypasses the visibility/clipping issue caused by 'position: fixed'
     cy.get('li[role="menuitem"]', { timeout: 30000 })
       .contains(orgName)
       .scrollIntoView()
-      .should('exist') // Changed from 'be.visible' to 'exist'
-      .click({ force: true }); // force: true will execute the click even if clipped
+      .should('exist')
+      .click({ force: true });
 
     this.waitForLoaders();
   }
