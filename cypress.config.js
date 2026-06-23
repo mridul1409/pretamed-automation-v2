@@ -26,18 +26,33 @@ module.exports = defineConfig({
       const version = config.env.version || "local";
       const envConfig = getConfigurationByFile(version);
       // Inside cypress.config.js setupNodeEvents
-// const Reporter = require("./cypress/utils/reporter");
-let currentReportPath = "";
+      // const Reporter = require("./cypress/utils/reporter");
+      let currentReportPath = "";
 
-on("task", {
-  initOperationReport(options) {
-    // Pass config and options (title, url, mode)
-    return Reporter.initReport(config, options);
-  },
-  writeOperationTableReport(row) {
-    return Reporter.writeOperationTableReport(row);
-  }
-});
+      on("task", {
+        initReport(options) {
+          return Reporter.initReport(config, {
+            title: "Performance Report",
+            url: config.baseUrl,
+            ...options
+          });
+        },
+
+        initOperationReport(options) {
+          // Pass config and options (title, url, mode)
+          return Reporter.initReport(config, options);
+        },
+        writeOperationTableReport(row) {
+          return Reporter.writeOperationTableReport(row);
+        },
+        // Inside your existing on("task", { ... }) block
+        writePerformanceText(row) {
+          return Reporter.writePerformanceText(row);
+        },
+        writeBottleneckReport(data) {
+          return Reporter.writeBottleneckReport(data);
+        }
+      });
 
       // Merge config values
       config.baseUrl = envConfig.baseUrl;

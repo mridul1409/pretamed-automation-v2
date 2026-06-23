@@ -5,6 +5,7 @@ const resultsDir = path.join(__dirname, "..", "results");
 let currentFilePath = "";
 
 const Reporter = {
+
   /**
    * Initializes the report with the detailed header and table structure
    */
@@ -84,7 +85,51 @@ const Reporter = {
     const tableBorder = `+------+------------------------------------------------------------------------+------------+-------------------------------------------------------------------------+\n`;
     fs.appendFileSync(currentFilePath, rowContent + tableBorder);
     return true;
+  },
+
+// Add these methods inside the Reporter object in reporter.js
+
+  /**
+   * Writes the Page Performance table (Primary and Full Load)
+   */
+  writePerformanceText(row) {
+    if (!currentFilePath) return false;
+    const pageHeader = `\n======================================================================\n` +
+                       `📄 PAGE PERFORMANCE REPORT\n` +
+                       `Page name: ${row.page}\nPage URL: ${row.url}\n`;
+    const line = "+---------------------+----------------------+--------------------+\n";
+    const tableHeader = line + "| Page                | Primary Load (ms)    | Full Load (ms)     |\n" + line;
+    const format = (text, width) => (String(text || "N/A") + " ".repeat(width)).substring(0, width);
+    const rowText = "| " + format(row.page, 20) + " | " + format(String(row.primaryLoadTime), 20) + 
+                    " | " + format(String(row.fullLoadTime), 18) + " |\n" + line;
+    
+    fs.appendFileSync(currentFilePath, pageHeader + tableHeader + rowText);
+    return true;
+  },
+
+  /**
+   * Writes the ranked list of API calls for the page
+   */
+  writeBottleneckReport({ allApis, failedApis }) {
+    if (!currentFilePath) return false;
+
+    const format = (text, width) => (String(text || "N/A") + " ".repeat(width)).substring(0, width);
+    let report = `\n⚠️  BACKEND API CALLS FOR THIS PAGE (SORTED BY DURATION):\n`;
+    const apiLine = "+------+--------------------------------------------------------------------------------------------------------------------------+----------------------+\n";
+    report += apiLine + "| Rank | API URL                                                                                                                  | Duration (ms)        |\n" + apiLine;
+
+    allApis.forEach((api, index) => {
+      const rank = format(String(index + 1), 4);
+      let cleanUrl = api.url.split('?')[0]; 
+      let urlDisplay = cleanUrl.length > 120 ? cleanUrl.substring(0, 117) + "..." : cleanUrl;
+      report += `| ${rank} | ${format(urlDisplay, 120)} | ${format(String(api.duration), 20)} |\n`;
+    });
+    report += apiLine + "\n";
+
+    fs.appendFileSync(currentFilePath, report);
+    return true;
   }
+  
 };
 
 module.exports = Reporter;

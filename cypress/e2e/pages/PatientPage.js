@@ -16,6 +16,15 @@ class PatientPage {
     cy.get(this.loaderSelectors, { timeout: 120000 }).should('not.exist');
   }
 
+  /**
+   * Navigates directly to the Patient List page using the environment path
+   */
+  navigateToPatientList() {
+    const url = Cypress.config().baseUrl.replace(/\/$/, "") + Cypress.env("PATIENT_LIST_PATH");
+    cy.visit(url);
+    this.waitForLoaders();
+  }
+
   openInitialModal() {
     this.newPatientBtn.click({ force: true });
     this.patientDialog.should('be.visible');
