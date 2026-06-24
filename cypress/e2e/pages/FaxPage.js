@@ -53,9 +53,15 @@ class FaxPage {
   openFaxContactModal() {
     cy.get("body").should("be.visible");
 
-    this.accountIcon.should("be.visible", {timeout: 100000}).first().click({ force: true });
+    cy.get('button[aria-label="account of current user"]')
+      .filter(':visible')
+      .should('be.visible')
+      .click({ force: true });
 
-    this.faxContactMenu.should("be.visible", {timeout: 100000}).click({ force: true });
+    cy.contains('li[role="menuitem"]', /Fax Contact/i, { timeout: 15000 })
+      .should('exist')
+      .click({ force: true });
+
     this.waitForLoaders();
   }
 
@@ -65,7 +71,8 @@ class FaxPage {
       .find("input")
       .last()
       .should('be.visible')
-      .type(uniqueFax, { force: true });
+      .clear({ force: true })
+      .type(uniqueFax, { delay: 100, force: true }); 
     cy.contains("span", /Name/i)
       .parent()
       .find("input")
@@ -81,12 +88,13 @@ class FaxPage {
       .find("input")
       .first()
       .type(data.msp, { force: true });
-    cy.contains("span", /Phone/i)
+cy.contains("span", /Phone/i)
       .parent()
       .find("input")
       .last()
       .should('be.visible')
-      .type(data.phone, { force: true });
+      .clear({ force: true })
+      .type("6045550199", { delay: 100, force: true });
     cy.contains("span", /Address/i)
       .parent()
       .find("textarea, input")
@@ -96,9 +104,9 @@ class FaxPage {
     cy.contains("button", /^ADD$/i).should("be.enabled").click({ force: true });
   }
 
-/**
-   * Verifies contact visibility by searching with a cleaned (digits-only) fax number
-   */
+  /**
+     * Verifies contact visibility by searching with a cleaned (digits-only) fax number
+     */
   verifyContactVisible(uniqueFax, name) {
     // Regular Expression to remove all non-digit characters (brackets, spaces, dashes, etc.)
     const rawFaxNumber = uniqueFax.toString().replace(/\D/g, '');
@@ -139,7 +147,7 @@ class FaxPage {
   get taskTab() {
     return cy.get('div[aria-label="TASK"]');
   }
-  
+
   get createTaskBtn() {
     return cy.contains("button", /CREATE TASK/i);
   }
@@ -341,15 +349,15 @@ class FaxPage {
     this.taskSearchInput.should('be.visible').clear({ force: true }).type(taskTitle, { force: true });
     this.waitForLoaders();
 
-// 2. Locate the specific row, scroll to it, and click the delete button
+    // 2. Locate the specific row, scroll to it, and click the delete button
     cy.get('table tbody').contains('tr', taskTitle)
-        .scrollIntoView() // Crucial: Scroll the entire row into view first
-        .within(() => {
-            // Using 'exist' instead of 'be.visible' to bypass the CSS clipping assertion
-            cy.get('button.row-delete-btn')
-              .should('exist') 
-              .click({ force: true }); // force: true will click even if it's partially clipped
-        });
+      .scrollIntoView() // Crucial: Scroll the entire row into view first
+      .within(() => {
+        // Using 'exist' instead of 'be.visible' to bypass the CSS clipping assertion
+        cy.get('button.row-delete-btn')
+          .should('exist')
+          .click({ force: true }); // force: true will click even if it's partially clipped
+      });
 
     // 3. Handle the "Are you sure?" confirmation modal
     cy.contains('.swal2-popup', /Are you sure/i, { timeout: 10000 }).should('be.visible');
@@ -360,7 +368,7 @@ class FaxPage {
 
     // 5. Final Verification: Ensure the task is no longer in the filtered results
     cy.get('table tbody').should('not.contain', taskTitle);
-    
+
     cy.log(">>> Task deleted and verified: " + taskTitle);
   }
 }
