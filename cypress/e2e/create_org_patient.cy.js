@@ -20,12 +20,24 @@ describe("Complete Patient Onboarding Workflow", () => {
         email: "demo@email.com"
     };
 
-    const PATIENT_DATA = {
-        country: "Canada", province: "British Columbia", dob: "1990-01-01",
-        firstName: "Mehedi", lastName: "Mridul", gender: "male",
-        address: "123 Medical Plaza", city: "Vancouver", phone: "6045550199",
-        pcp: "Dr. John Smith"
-    };
+const PATIENT_DATA = {
+    country: "Canada",
+    province: "British Columbia",
+    dob: "1990-01-01",
+    firstName: "Mehedi",
+    lastName: "Mridul",
+    gender: "male",
+    address: "123 Medical Plaza",
+    city: "Vancouver",
+    postalCode: "V6B 1A1",
+    phone: "16045550199",
+    pcp: "mridul",
+    referralProvider: "limon",
+    emergencyName: "Emergency Hasan",
+    emergencyPhone: "16041112222",
+    emergencyEmail: `em.${uniqueId}@test.com`,
+    emergencyRelationship: "Brother"
+  };
 
     before(() => {
         cy.task("initOperationReport", {
