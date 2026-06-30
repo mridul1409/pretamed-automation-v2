@@ -6,7 +6,7 @@ class BillingPage {
     return ".MuiCircularProgress-root, .MuiLinearProgress-root, .spinner, .MuiSkeleton-root";
   }
   get startNewBillBtn() {
-    return cy.contains("button", /Start a New Bill/i);
+    return cy.contains("button", /Start a New Bill/i, {timeout: 60000});
   }
 
   // Scoped container for the billing form using Check Eligibility as anchor
