@@ -1630,7 +1630,7 @@ class ChartPage {
       .should('be.visible');
 
     // 2. Wait for the internal textarea (where we actually type) to exist
-    // This ensures that the editor's core logic is fully initialized
+  
     cy.get('.monaco-editor textarea', { timeout: 20000 })
       .should('exist')
       .as('monacoInput');
@@ -1644,7 +1644,7 @@ class ChartPage {
       cy.get("textarea, input").eq(0).type("Billing session " + noteId, { force: true });
       cy.get("input").eq(1).type("Billing Note " + noteId, { force: true });
       cy.get("input").eq(2).type("2026-02-03", { force: true });
-      cy.contains("button", /UPDATE/i).click({ force: true });
+      cy.contains("button", /SAVE/i).click({ force: true });
     });
 
     // Verify header update success

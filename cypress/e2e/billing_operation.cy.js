@@ -9,9 +9,8 @@ describe("Verification of Billing Note Creation", () => {
 
   // Test data for verification
   const TEST_DATA = {
-    targetOrg: "ABC",
-    targetPatient: "Kidd, James",
-  };
+    targetOrg: "Alpha",
+    targetPatient: "Automation, Test User"};
 
   before(() => {
     // Initializing report for this test session
