@@ -16,6 +16,7 @@ function getConfigurationByFile(file) {
 }
 
 module.exports = defineConfig({
+  projectId: 'd4ienp',
   e2e: {
     testIsolation: false,
     viewportWidth: 1920,

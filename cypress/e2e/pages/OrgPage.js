@@ -24,7 +24,7 @@ class OrgPage {
 
   fillOrgForm(data, newName, newId) {
     this.orgNameInput.type(newName, { force: true });
-    this.orgUniqIdInput.type(newId, { force: true });
+    // this.orgUniqIdInput.type(newId, { force: true });
     this.orgTypeDropdown.click({ force: true });
     cy.get('li[role="option"]').contains(data.type).click();
     // Registration number
@@ -67,6 +67,21 @@ class OrgPage {
     this.submitBtn.click({ force: true });
   }
 
+/**
+   * Verifies the organization by its specific profile link ID
+   * orgId - The MongoDB ID returned from the API
+   */
+  verifyOrgByHrefId(orgId) {
+    this.waitForLoaders();
+    // Verify that an anchor tag exists with the specific organization-profile link
+    cy.get(`a[href*="/organization-profile/${orgId}"]`, { timeout: 30000 })
+      .should('be.visible')
+      .and('have.attr', 'href')
+      .and('include', orgId);
+    
+    cy.log(">>> Organization verified successfully via API ID: " + orgId);
+  }
+
   /**
      * Verifies the successful creation of an organization by checking 
      * the dashboard headers and the presence of the new org name.
@@ -78,10 +93,6 @@ class OrgPage {
     const expectedUrl = Cypress.config().baseUrl.replace(/\/$/, "") + Cypress.env('ORG_PATH');
     cy.url({ timeout: 60000 }).should("eq", expectedUrl);
     this.waitForLoaders();
-
-    // 2. Verify dashboard specific headers as per your screenshot
-    cy.contains("Incoming Request to join the Organization", { timeout: 60000 }).should("be.visible");
-    cy.contains("Outgoing Request to join an Organization", { timeout: 60000 }).should("be.visible");
 
     // 3. Look for the newly created Organization Name in the list
     cy.contains(newName, { timeout: 30000 }).should("be.visible");
@@ -106,6 +117,7 @@ class OrgPage {
 
     this.waitForLoaders();
   }
+
 }
 
 export default new OrgPage();

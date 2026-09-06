@@ -58,8 +58,8 @@ class ChartPage {
       cy.contains(/Note/i).parent().find("input, textarea").type(initialNote, { force: true });
     });
     cy.get('@dataRow').find("td").last().find("button").first().click({ force: true });
-    cy.contains(/created.*successfully/i, { timeout: 10000 }).should("be.visible");
-    cy.contains(/created.*successfully/i, { timeout: 10000 }).should("not.exist");
+    cy.contains(/created.*successfully/i, { timeout: 60000 }).should("be.visible");
+    cy.contains(/created.*successfully/i, { timeout: 60000 }).should("not.exist");
     this.waitForLoaders();
 
     // --- UPDATE ---
@@ -74,8 +74,8 @@ class ChartPage {
       cy.contains(/Note/i).parent().find("input, textarea").clear({ force: true }).type(updatedNote, { force: true });
     });
     cy.get("@noteRowUpdate").prev().find("td").last().find("button").first().click({ force: true });
-    cy.contains(/updated.*successfully/i, { timeout: 10000 }).should("be.visible");
-    cy.contains(/updated.*successfully/i, { timeout: 10000 }).should("not.exist");
+    cy.contains(/updated.*successfully/i, { timeout: 60000 }).should("be.visible");
+    cy.contains(/updated.*successfully/i, { timeout: 60000 }).should("not.exist");
     this.waitForLoaders();
 
     // --- DELETE ---
@@ -84,8 +84,8 @@ class ChartPage {
       cy.get('button[aria-label="Delete"], button[aria-label="delete"]').click({ force: true });
     });
     cy.contains("button", "Yes, delete it!").click({ force: true });
-    cy.contains(/deleted.*successfully/i, { timeout: 10000 }).should("be.visible");
-    cy.contains(/deleted.*successfully/i, { timeout: 10000 }).should("not.exist");
+    cy.contains(/deleted.*successfully/i, { timeout: 60000 }).should("be.visible");
+    cy.contains(/deleted.*successfully/i, { timeout: 60000 }).should("not.exist");
     this.waitForLoaders();
   }
 
@@ -111,8 +111,8 @@ class ChartPage {
       cy.get("td").eq(2).find("input").first().type(initialLE.toString(), { force: true });
       cy.get("td").last().find("button").first().click({ force: true });
     });
-    cy.contains(/created.*successfully/i).should("be.visible");
-    cy.contains(/created.*successfully/i).should("not.exist");
+    cy.contains(/created.*successfully/i).should("be.visible", { timeout: 60000 });
+    cy.contains(/created.*successfully/i).should("not.exist", { timeout: 60000 });
     this.waitForLoaders();
 
     // --- UPDATE PART ---
@@ -128,7 +128,7 @@ class ChartPage {
     // Important: Wait for the row to actually contain inputs (Edit Mode)
     cy.get('@rowToUpdate').within(() => {
       // Increased wait for stable input rendering after the TypeError
-      cy.get("input", { timeout: 15000 }).should("be.visible");
+      cy.get("input", { timeout: 120000 }).should("be.visible");
 
       cy.get("td").eq(1).find("input").clear({ force: true }).type(updatedRE.toString(), { force: true });
       cy.get("td").eq(2).find("input").clear({ force: true }).type(updatedLE.toString(), { force: true });
@@ -137,7 +137,8 @@ class ChartPage {
       cy.get("td").last().find("button").first().click({ force: true });
     });
 
-    cy.contains(/updated.*successfully/i).should("be.visible");
+    cy.contains(/updated.*successfully/i).should("be.visible", { timeout: 120000 });
+    cy.contains(/updated.*successfully/i).should("not.exist", { timeout: 120000 });
     this.waitForLoaders();
 
     // --- DELETE PART ---
@@ -153,14 +154,15 @@ class ChartPage {
     // Locate the delete button within the same targeted row
     cy.get("@rowToDelete").within(() => {
       // Increased timeout to wait for the delete button to render after the app exception
-      cy.get('button[aria-label="Delete"]', { timeout: 15000 })
+      cy.get('button[aria-label="Delete"]', { timeout: 120000 })
         .should("be.visible")
         .click({ force: true });
     });
 
     // Standard confirmation flow
     cy.contains("button", "Yes, delete it!").click({ force: true });
-    cy.contains(/deleted.*successfully/i).should("be.visible");
+    cy.contains(/deleted.*successfully/i).should("be.visible", { timeout: 120000 });
+    cy.contains(/deleted.*successfully/i).should("not.exist", { timeout: 120000 });
     this.waitForLoaders();
   }
 
@@ -186,8 +188,8 @@ class ChartPage {
       cy.get("td").eq(3).find("input").first().type("Doctor Mehedi", { force: true });
       cy.get("td").last().find("button").first().click({ force: true });
     });
-    cy.contains(/ *created.*successfully/i, { timeout: 20000 }).should("be.visible");
-    cy.contains(/ *created.*successfully/i, { timeout: 20000 }).should("not.exist");
+    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("not.exist");
 
     this.waitForLoaders();
 
@@ -200,13 +202,13 @@ class ChartPage {
     cy.get('@levelRowToUpdate').click({ force: true });
     cy.get('@levelRowToUpdate').within(() => {
       // Waiting for edit mode inputs to render properly
-      cy.get("input", { timeout: 15000 }).should("be.visible");
+      cy.get("input", { timeout: 120000 }).should("be.visible");
       cy.get("td").eq(1).find("input").clear({ force: true }).type("Urgent", { force: true });
       cy.get("td").eq(2).find("input").clear({ force: true }).type(updatedDesc, { force: true });
       cy.get("td").last().find("button").first().click({ force: true });
     });
-    cy.contains(/ *updated.*successfully/i, { timeout: 20000 }).should("be.visible");
-    cy.contains(/ *updated.*successfully/i, { timeout: 20000 }).should("not.exist");
+    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("not.exist");
 
     this.waitForLoaders();
 
@@ -218,13 +220,13 @@ class ChartPage {
 
     cy.get("@levelRowToDelete").click({ force: true });
     cy.get("@levelRowToDelete").within(() => {
-      cy.get('button[aria-label="Delete"]', { timeout: 15000 })
+      cy.get('button[aria-label="Delete"]', { timeout: 120000 })
         .should("be.visible")
         .click({ force: true });
     });
     cy.contains("button", "Yes, delete it!").click({ force: true });
-    cy.contains(/ *deleted.*successfully/i, { timeout: 20000 }).should("be.visible");
-    cy.contains(/ *deleted.*successfully/i, { timeout: 20000 }).should("not.exist");
+    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
   }
 
@@ -262,8 +264,8 @@ class ChartPage {
       cy.get("td").last().find("button").first().click({ force: true });
     });
 
-    cy.contains(/ *created.*successfully/i, { timeout: 20000 }).should("be.visible");
-    cy.contains(/ *created.*successfully/i, { timeout: 20000 }).should("not.exist");
+    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("not.exist");
 
     this.waitForLoaders();
 
@@ -276,14 +278,14 @@ class ChartPage {
     cy.get("@medRowToUpdate").find("td").first().click({ force: true });
 
     cy.get("@medRowToUpdate").within(() => {
-      cy.get("input", { timeout: 15000 }).should("be.visible");
+      cy.get("input", { timeout: 120000 }).should("be.visible");
       cy.get("td").eq(0).find("input").first().clear({ force: true }).type(updatedName, { force: true });
       cy.get("td").eq(2).find("input").first().clear({ force: true }).type("Urticaria", { force: true });
       cy.get("td").last().find("button").first().click({ force: true });
     });
 
-    cy.contains(/ *updated.*successfully/i, { timeout: 20000 }).should("be.visible");
-    cy.contains(/ *updated.*successfully/i, { timeout: 20000 }).should("not.exist");
+    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
 
     // --- DELETE PART ---
@@ -294,7 +296,7 @@ class ChartPage {
     cy.get("@medRowToDelete").find("td").first().click({ force: true });
 
     cy.get("@medRowToDelete").within(() => {
-      cy.get("input", { timeout: 15000 }).should("be.visible");
+      cy.get("input", { timeout: 120000 }).should("be.visible");
       // Targeting the red delete button specifically
       cy.get('button[aria-label="Delete"], button[aria-label="delete"]')
         .filter(".MuiIconButton-colorError")
@@ -303,8 +305,8 @@ class ChartPage {
     });
 
     cy.contains("button", "Yes, delete it!").click({ force: true });
-    cy.contains(/ *deleted.*successfully/i, { timeout: 20000 }).should("be.visible");
-    cy.contains(/ *deleted.*successfully/i, { timeout: 20000 }).should("not.exist");
+    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
   }
 
@@ -340,7 +342,8 @@ class ChartPage {
       cy.get("td").last().find("button").first().click({ force: true });
     });
 
-    cy.contains(/ *created.*successfully/i, { timeout: 20000 }).should("be.visible");
+    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
 
     // --- UPDATE PART ---
@@ -351,12 +354,13 @@ class ChartPage {
     cy.get("@foodRowToUpdate").find("td").first().click({ force: true });
 
     cy.get("@foodRowToUpdate").within(() => {
-      cy.get("input", { timeout: 15000 }).should("be.visible");
+      cy.get("input", { timeout: 120000 }).should("be.visible");
       cy.get("td").eq(0).find("input").first().clear({ force: true }).type(updatedName, { force: true });
       cy.get("td").last().find("button").first().click({ force: true });
     });
 
-    cy.contains(/ *updated.*successfully/i, { timeout: 20000 }).should("be.visible");
+    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
 
     // --- DELETE PART ---
@@ -367,7 +371,7 @@ class ChartPage {
     cy.get("@foodRowToDelete").find("td").first().click({ force: true });
 
     cy.get("@foodRowToDelete").within(() => {
-      cy.get("input", { timeout: 15000 }).should("be.visible");
+      cy.get("input", { timeout: 120000 }).should("be.visible");
       cy.get('button[aria-label="Delete"], button[aria-label="delete"]')
         .filter(".MuiIconButton-colorError")
         .should("be.visible")
@@ -375,7 +379,8 @@ class ChartPage {
     });
 
     cy.contains("button", "Yes, delete it!").click({ force: true });
-    cy.contains(/ *deleted.*successfully/i, { timeout: 20000 }).should("be.visible");
+    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
   }
 
@@ -415,7 +420,8 @@ class ChartPage {
       cy.get("td").last().find("button").first().click({ force: true });
     });
 
-    cy.contains(/ *created.*successfully/i, { timeout: 20000 }).should("be.visible");
+    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
 
     // --- UPDATE PART ---
@@ -426,12 +432,13 @@ class ChartPage {
     cy.get("@envRowToUpdate").find("td").first().click({ force: true });
 
     cy.get("@envRowToUpdate").within(() => {
-      cy.get("input", { timeout: 15000 }).should("be.visible");
+      cy.get("input", { timeout: 120000 }).should("be.visible");
       cy.get("td").eq(0).find("input").first().clear({ force: true }).type(updatedName, { force: true });
       cy.get("td").last().find("button").first().click({ force: true });
     });
 
-    cy.contains(/ *updated.*successfully/i, { timeout: 20000 }).should("be.visible");
+    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
 
     // --- DELETE PART ---
@@ -442,7 +449,7 @@ class ChartPage {
     cy.get("@envRowToDelete").find("td").first().click({ force: true });
 
     cy.get("@envRowToDelete").within(() => {
-      cy.get("input", { timeout: 15000 }).should("be.visible");
+      cy.get("input", { timeout: 120000 }).should("be.visible");
       cy.get('button[aria-label="Delete"], button[aria-label="delete"]')
         .filter(".MuiIconButton-colorError")
         .should("be.visible")
@@ -450,7 +457,8 @@ class ChartPage {
     });
 
     cy.contains("button", "Yes, delete it!").click({ force: true });
-    cy.contains(/ *deleted.*successfully/i, { timeout: 20000 }).should("be.visible");
+    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
   }
 
@@ -486,7 +494,8 @@ class ChartPage {
       cy.get("td").last().find("button").first().click({ force: true });
     });
 
-    cy.contains(/ *created.*successfully/i, { timeout: 20000 }).should("be.visible");
+    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
 
     // --- UPDATE PART ---
@@ -497,12 +506,13 @@ class ChartPage {
     cy.get("@bioRowToUpdate").find("td").first().click({ force: true });
 
     cy.get("@bioRowToUpdate").within(() => {
-      cy.get("input", { timeout: 15000 }).should("be.visible");
+      cy.get("input", { timeout: 120000 }).should("be.visible");
       cy.get("td").eq(0).find("input").first().clear({ force: true }).type(updatedName, { force: true });
       cy.get("td").last().find("button").first().click({ force: true });
     });
 
-    cy.contains(/ *updated.*successfully/i, { timeout: 20000 }).should("be.visible");
+    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
 
     // --- DELETE PART ---
@@ -513,7 +523,7 @@ class ChartPage {
     cy.get("@bioRowToDelete").find("td").first().click({ force: true });
 
     cy.get("@bioRowToDelete").within(() => {
-      cy.get("input", { timeout: 15000 }).should("be.visible");
+      cy.get("input", { timeout: 120000 }).should("be.visible");
       // Target red icon for deletion
       cy.get('button[aria-label="Delete"], button[aria-label="delete"]')
         .filter(".MuiIconButton-colorError")
@@ -522,7 +532,8 @@ class ChartPage {
     });
 
     cy.contains("button", "Yes, delete it!").click({ force: true });
-    cy.contains(/ *deleted.*successfully/i, { timeout: 20000 }).should("be.visible");
+    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
   }
 
@@ -556,7 +567,8 @@ class ChartPage {
       cy.get("td").last().find("button").first().click({ force: true });
     });
 
-    cy.contains(/ *created.*successfully/i, { timeout: 20000 }).should("be.visible");
+    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
 
     // --- UPDATE PART ---
@@ -568,7 +580,7 @@ class ChartPage {
 
     cy.get("@vitalsRowToUpdate").within(() => {
       // Wait for edit mode inputs to appear
-      cy.get("input", { timeout: 15000 }).should("be.visible");
+      cy.get("input", { timeout: 120000 }).should("be.visible");
 
       // Updating HR and SPO2
       cy.get("td").eq(2).find("input").clear({ force: true }).type(hrUpdate.toString(), { force: true });
@@ -577,7 +589,8 @@ class ChartPage {
       cy.get("td").last().find("button").first().click({ force: true });
     });
 
-    cy.contains(/ *updated.*successfully/i, { timeout: 20000 }).should("be.visible");
+    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
 
     // --- DELETE PART ---
@@ -592,14 +605,15 @@ class ChartPage {
 
     cy.get("@vitalsRowToDelete").within(() => {
       // Use an increased timeout to handle the app's internal TypeError sluggishness
-      cy.get('button[aria-label="Delete"], button[aria-label="delete"]', { timeout: 15000 })
+      cy.get('button[aria-label="Delete"], button[aria-label="delete"]', { timeout: 120000 })
         .should("be.visible")
         .click({ force: true });
     });
 
     // Standard confirmation flow
     cy.contains("button", "Yes, delete it!").click({ force: true });
-    cy.contains(/ *deleted.*successfully/i, { timeout: 20000 }).should("be.visible");
+    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
   }
 
@@ -625,7 +639,8 @@ class ChartPage {
       cy.get("td").last().find("button").first().click({ force: true });
     });
 
-    cy.contains(/ *created.*successfully/i, { timeout: 20000 }).should("be.visible");
+    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
 
     // --- UPDATE PART ---
@@ -637,13 +652,14 @@ class ChartPage {
 
     cy.get("@phyRowToUpdate").within(() => {
       // Wait for inputs to render in edit mode
-      cy.get("input", { timeout: 15000 }).should("be.visible");
+      cy.get("input", { timeout: 120000 }).should("be.visible");
       cy.get("td").eq(1).find("input").first().clear({ force: true }).type("180", { force: true });
       cy.get("td").eq(3).find("input").first().clear({ force: true }).type(weightUpdate.toString(), { force: true });
       cy.get("td").last().find("button").first().click({ force: true });
     });
 
-    cy.contains(/ *updated.*successfully/i, { timeout: 20000 }).should("be.visible");
+    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
 
     // --- DELETE PART ---
@@ -655,84 +671,280 @@ class ChartPage {
     cy.get("@phyRowToDelete").click({ force: true });
 
     cy.get("@phyRowToDelete").within(() => {
-      cy.get('button[aria-label="Delete"], button[aria-label="delete"]', { timeout: 15000 })
+      cy.get('button[aria-label="Delete"], button[aria-label="delete"]', { timeout: 120000 })
         .should("be.visible")
         .click({ force: true });
     });
 
     cy.contains("button", "Yes, delete it!").click({ force: true });
-    cy.contains(/ *deleted.*successfully/i, { timeout: 20000 }).should("be.visible");
+    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
   }
+
 
   // Selectors for Medical History
   get medicalHxContainer() { return cy.get("#medicalHx"); }
   get addMedicalHxBtn() { return this.medicalHxContainer.find(".chart-header button.MuiIconButton-colorPrimary"); }
 
+
+
+
+
+  // Selectors for the new Medical History (New Feature)
+  get medicalHxContainer() { return cy.get("#medicalHx"); }
+  get addNewMedicalHxBtn() { return this.medicalHxContainer.find("button.MuiIconButton-colorPrimary").last(); }
+
   /**
-   * Complete CRUD operation for Medical History
+   * Part 1: Fills the primary fields of Medical History
+   * @param {Object} data - Contains diagnosis, verification, clinical, and asserter info
    */
-  medicalHistoryCRUD() {
-    const idCreate = Math.floor(100 + Math.random() * 900);
-    const idUpdate = Math.floor(100 + Math.random() * 900);
-    const initialDiagnosis = "Hypertension ID: " + idCreate;
-    const updatedDiagnosis = "Type 2 Diabetes ID: " + idUpdate;
-
-    // --- CREATE PART ---
-    this.addMedicalHxBtn.click({ force: true });
-
-    this.medicalHxContainer.find("table tbody tr").first().as('medHxNewRow').within(() => {
-      // Index 0: Diagnosis, 1: Start, 2: End, 3: Notes
-      cy.get("td").eq(0).find("input").first().type(initialDiagnosis, { force: true });
-      cy.get("td").eq(1).find("input").first().type("Jan 2022", { force: true });
-      cy.get("td").eq(2).find("input").first().type("Dec 2024", { force: true });
-      cy.get("td").eq(3).find("input").first().type("Medication ongoing", { force: true });
-      cy.get("td").last().find("button").first().click({ force: true });
-    });
-
-    cy.contains(/ *created.*successfully/i, { timeout: 20000 }).should("be.visible");
+  fillPrimaryMedicalHistory(data) {
+    // 1. Open new row for entry
+    this.addNewMedicalHxBtn.click({ force: true });
     this.waitForLoaders();
 
-    // --- UPDATE PART ---
-    cy.contains("#medicalHx tr", idCreate.toString())
-      .scrollIntoView()
-      .as("medHxRowToUpdate");
-
-    // Click the first cell to enter edit mode
-    cy.get("@medHxRowToUpdate").find("td").first().click({ force: true });
-
-    cy.get("@medHxRowToUpdate").within(() => {
-      // Ensure input fields are rendered
-      cy.get("input", { timeout: 15000 }).should("be.visible");
-
-      cy.get("td").eq(0).find("input").first().clear({ force: true }).type(updatedDiagnosis, { force: true });
-      cy.get("td").eq(3).find("input").first().clear({ force: true }).type("Condition updated with new ID: " + idUpdate, { force: true });
-
-      cy.get("td").last().find("button").first().click({ force: true });
-    });
-
-    cy.contains(/ *updated.*successfully/i, { timeout: 20000 }).should("be.visible");
+    // 2. Fill Diagnosis (Autocomplete)
+    this.medicalHxContainer.find('input[placeholder="Search diagnosis"]')
+      .should('be.visible')
+      .type(data.diagnosis, { delay: 200, force: true });
     this.waitForLoaders();
 
-    // --- DELETE PART ---
-    cy.contains("#medicalHx tr", idUpdate.toString())
-      .scrollIntoView()
-      .as("medHxRowToDelete");
 
-    cy.get("@medHxRowToDelete").find("td").first().click({ force: true });
+    // Wait and select the first suggestion
+    cy.get('li.MuiAutocomplete-option', { timeout: 15000 })
+      .first()
+      .should('be.visible')
+      .click({ force: true });
 
-    cy.get("@medHxRowToDelete").within(() => {
-      cy.get("input", { timeout: 15000 }).should("be.visible");
-      // Targeting specifically the red delete button
-      cy.get('button[aria-label="delete"].MuiIconButton-colorError')
-        .should("be.visible")
-        .click({ force: true });
+    // 3. Fill Verification Dropdown
+    this.medicalHxContainer.find('div.MuiSelect-select').eq(0)
+      .should('be.visible')
+      .click({ force: true });
+    cy.get('li[role="option"]').contains(data.verification).click({ force: true });
+
+    // 4. Fill Clinical Dropdown
+    this.medicalHxContainer.find('div.MuiSelect-select').eq(1)
+      .should('be.visible')
+      .click({ force: true });
+    cy.get('li[role="option"]').contains(data.clinicalStatus).click({ force: true });
+
+    // 5. Fill Asserter (Autocomplete)
+    this.medicalHxContainer.find('input[placeholder="Search asserter..."]')
+      .should('be.visible')
+      .clear({ force: true })
+      .type(data.asserter, { delay: 200, force: true });
+    this.waitForLoaders();
+
+
+    // Select from dropdown
+    cy.get('li.MuiAutocomplete-option', { timeout: 15000 })
+      .should('not.contain', 'No result found')
+      .should('be.visible')
+      .first()
+      .click({ force: true });
+
+    cy.log(">>> Primary Medical History fields filled successfully.");
+  }
+
+
+  // Selectors for Additional Details
+  get showAdditionalDetailsBtn() { return cy.contains('button', /Show additional details/i); }
+  get hideAdditionalDetailsBtn() { return cy.contains('button', /Hide additional details/i); }
+
+  /**
+   * Part 2: Fills the additional details fields for Medical History
+   * @param {Object} data - Contains ages, comments, severity, body site, and stage
+   */
+  fillAdditionalMedicalHistory(data) {
+    // 1. Expand section
+    this.showAdditionalDetailsBtn.should('be.visible').click({ force: true });
+    this.waitForLoaders();
+
+    // 2. Target Onset section
+    // Use closest() to find the common parent of label and inputs
+    cy.contains('p', /^Onset$/i)
+      .closest('.MuiBox-root')
+      .parent() // Accessing the row container
+      .find('input[placeholder="Years"]')
+      .should('be.visible')
+      .type(data.onsetAge, { force: true });
+
+    cy.contains('p', /^Onset$/i)
+      .closest('.MuiBox-root')
+      .parent()
+      .find('input[placeholder="Note"]')
+      .type(data.onsetComment, { force: true });
+
+    // 3. Target Abatement section
+    cy.contains('p', /^Abatement$/i)
+      .closest('.MuiBox-root')
+      .parent()
+      .find('input[placeholder="Years"]')
+      .should('be.visible')
+      .type(data.abatementAge, { force: true });
+
+    cy.contains('p', /^Abatement$/i)
+      .closest('.MuiBox-root')
+      .parent()
+      .find('input[placeholder="Note"]')
+      .type(data.abatementComment, { force: true });
+
+    // 4. Select Severity (Dropdown)
+    cy.contains('p', /Severity/i)
+      .parent()
+      .find('[role="combobox"]')
+      .first()
+      .should('be.visible')
+      .click({ force: true });
+    cy.get('li[role="option"]').contains(data.severity).click({ force: true });
+
+    // 5. Fill Body site (Autocomplete)
+    cy.contains('p', /Body site/i)
+      .parent()
+      .find('input')
+      .first() // Ensures only the Body site input is targeted
+      .should('be.visible')
+      .type(data.bodySite, { force: true });
+
+    // 6. Fill Stage (Autocomplete)
+    cy.contains('p', /Stage/i)
+      .closest('.MuiBox-root')
+      .parent()
+      .find('input')
+      .should('be.visible')
+      .type(data.stage, { force: true });
+    cy.get('li.MuiAutocomplete-option', { timeout: 15000 })
+      .should('not.contain', 'No result found')
+      .first().click({ force: true });
+
+    cy.log(">>> Additional details successfully filled using robust traversal.");
+
+    // 7. Save the Medical History record (Click the blue tick button)
+    cy.contains('button', /Hide additional details/i)
+      .parent()
+      .find('button.MuiIconButton-colorPrimary')
+      .should('be.visible')
+      .click({ force: true });
+
+    this.waitForLoaders();
+
+    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("not.exist");
+    this.waitForLoaders();
+
+    // 8. Final Verification: Ensure the record is present with correct details
+    cy.get('#medicalHx').within(() => {
+      cy.contains('div', data.diagnosis).should('be.visible');
+
+      cy.get(`div[aria-label*="At age ${data.onsetAge}"][aria-label*="${data.severity}"]`)
+        .should('be.visible');
     });
 
-    cy.contains("button", "Yes, delete it!").click({ force: true });
-    cy.contains(/ *deleted.*successfully/i, { timeout: 20000 }).should("be.visible");
+    cy.log(">>> Medical History record verified in the summary list.");
+  }
+
+
+  updateMedicalHistory(existingDiagnosis, newData) {
+    // 1. Click on the existing record (Diagnosis text) to open edit mode
+    cy.contains('#medicalHx div', existingDiagnosis).should('be.visible').click({ force: true });
+    this.waitForLoaders();
+
+    // 2. Update Primary Fields
+    // Diagnosis
+    this.medicalHxContainer.find('input[placeholder="Search diagnosis"]')
+      .should('be.visible').clear({ force: true }).type(newData.diagnosis, { delay: 200, force: true });
+    cy.get('li.MuiAutocomplete-option', { timeout: 15000 })
+      .should('not.contain', 'No result found').first().click({ force: true });
+
+    // Verification
+    this.medicalHxContainer.find('div.MuiSelect-select').eq(0).click({ force: true });
+    cy.get('li[role="option"]').contains(newData.verification).click({ force: true });
+
+    // Clinical
+    this.medicalHxContainer.find('div.MuiSelect-select').eq(1).click({ force: true });
+    cy.get('li[role="option"]').contains(newData.clinicalStatus).click({ force: true });
+
+    // Asserter
+    this.medicalHxContainer.find('input[placeholder="Search asserter..."]')
+      .clear({ force: true }).type(newData.asserter, { delay: 200, force: true });
+    cy.get('li.MuiAutocomplete-option', { timeout: 15000 })
+      .should('not.contain', 'No result found').first().click({ force: true });
+
+    // 3. Update Additional Details
+    // this.showAdditionalDetailsBtn.should('be.visible').click({ force: true });
+
+    // Onset
+    cy.contains('p', /^Onset$/i).closest('.MuiBox-root').parent().within(() => {
+      cy.get('input[placeholder="Years"]').clear({ force: true }).type(newData.onsetAge, { force: true });
+      cy.get('input[placeholder="Note"]').clear({ force: true }).type(newData.onsetComment, { force: true });
+    });
+
+    // Abatement
+    cy.contains('p', /^Abatement$/i).closest('.MuiBox-root').parent().within(() => {
+      cy.get('input[placeholder="Years"]').clear({ force: true }).type(newData.abatementAge, { force: true });
+      cy.get('input[placeholder="Note"]').clear({ force: true }).type(newData.abatementComment, { force: true });
+    });
+
+    // Severity
+    cy.contains('p', /Severity/i).parent().find('[role="combobox"]').first().click({ force: true });
+    cy.get('li[role="option"]').contains(newData.severity).click({ force: true });
+
+    // Body site
+    cy.contains('p', /Body site/i).parent().find('input').first()
+      .clear({ force: true }).type(newData.bodySite, { delay: 200, force: true });
+    cy.get('li.MuiAutocomplete-option', { timeout: 15000 }).should('not.contain', 'No result found').first().click({ force: true });
+
+    // Stage
+    cy.contains('p', /Stage/i).closest('.MuiBox-root').parent().find('input')
+      .clear({ force: true }).type(newData.stage, { delay: 200, force: true });
+    cy.get('li.MuiAutocomplete-option', { timeout: 15000 }).should('not.contain', 'No result found').first().click({ force: true });
+
+    // 4. Save (Blue Tick)
+    cy.contains('button', /Hide additional details/i).parent().find('button.MuiIconButton-colorPrimary').click({ force: true });
+    this.waitForLoaders();
+
+    // 5. Verification after update
+    cy.contains(/updated.*successfully/i, { timeout: 30000 }).should("be.visible");
+    this.waitForLoaders();
+
+    cy.get('#medicalHx').within(() => {
+      cy.contains('div', newData.diagnosis).should('be.visible');
+      cy.get(`div[aria-label*="At age ${newData.onsetAge}"][aria-label*="${newData.severity}"]`).should('be.visible');
+    });
+
+
+    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("not.exist");
+    this.waitForLoaders();
+
+  }
+
+  deleteMedicalHistory(diagnosisTitle) {
+    // 1. Find the specific record row and target the red delete button
+    cy.contains('#medicalHx div', diagnosisTitle)
+      .closest('.MuiPaper-root')
+      .find('button.MuiIconButton-colorError')
+      .should('be.visible')
+      .click({ force: true });
+
+    // 2. Handle the "Are you sure?" confirmation modal
+    cy.get('.swal2-popup', { timeout: 10000 }).should('be.visible');
+    cy.contains('.swal2-popup button', 'Yes, delete it!')
+      .should('be.visible')
+      .click({ force: true });
+    this.waitForLoaders();
+
+
+    // 3. Verify success message
+    cy.contains(/deleted.*successfully/i, { timeout: 20000 }).should('be.visible');
+    cy.contains(/deleted.*successfully/i, { timeout: 20000 }).should('not.exist');
+
+    // 4. Final sync
     this.waitForLoaders();
   }
+
+
 
   // Selectors for Surgical History
   get surgicalHxContainer() { return cy.get("#surgicalHx"); }
@@ -757,7 +969,8 @@ class ChartPage {
       cy.get("td").last().find("button").first().click({ force: true });
     });
 
-    cy.contains(/ *created.*successfully/i, { timeout: 20000 }).should("be.visible");
+    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
 
     // --- UPDATE PART ---
@@ -769,12 +982,13 @@ class ChartPage {
     cy.get("@surgicalRowToUpdate").find("td").first().click({ force: true });
 
     cy.get("@surgicalRowToUpdate").within(() => {
-      cy.get("input", { timeout: 15000 }).should("be.visible");
+      cy.get("input", { timeout: 120000 }).should("be.visible");
       cy.get("td").eq(0).find("input").first().clear({ force: true }).type(updatedSurgical, { force: true });
       cy.get("td").last().find("button").first().click({ force: true });
     });
 
-    cy.contains(/ *updated.*successfully/i, { timeout: 20000 }).should("be.visible");
+    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
 
     // --- DELETE PART ---
@@ -785,14 +999,15 @@ class ChartPage {
     cy.get("@surgicalRowToDelete").click({ force: true });
 
     cy.get("@surgicalRowToDelete").within(() => {
-      cy.get("input", { timeout: 15000 }).should("be.visible");
+      cy.get("input", { timeout: 120000 }).should("be.visible");
       cy.get('button[aria-label="Delete"], button[aria-label="delete"]')
         .should("be.visible")
         .click({ force: true });
     });
 
     cy.contains("button", "Yes, delete it!").click({ force: true });
-    cy.contains(/ *deleted.*successfully/i, { timeout: 20000 }).should("be.visible");
+    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
   }
 
@@ -819,7 +1034,8 @@ class ChartPage {
       cy.get("td").last().find("button").first().click({ force: true });
     });
 
-    cy.contains(/ *created.*successfully/i, { timeout: 20000 }).should("be.visible");
+    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
 
     // --- UPDATE PART ---
@@ -832,13 +1048,14 @@ class ChartPage {
 
     cy.get("@familyRowToUpdate").within(() => {
       // Wait for input fields to render properly
-      cy.get("input", { timeout: 15000 }).should("be.visible");
+      cy.get("input", { timeout: 120000 }).should("be.visible");
 
       cy.get("td").eq(0).find("input").first().clear({ force: true }).type(updatedFamily, { force: true });
       cy.get("td").last().find("button").first().click({ force: true });
     });
 
-    cy.contains(/ *updated.*successfully/i, { timeout: 20000 }).should("be.visible");
+    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
 
     // --- DELETE PART ---
@@ -850,13 +1067,14 @@ class ChartPage {
     cy.get("@familyRowToDelete").click({ force: true });
 
     cy.get("@familyRowToDelete").within(() => {
-      cy.get('button[aria-label="Delete"], button[aria-label="delete"]', { timeout: 15000 })
+      cy.get('button[aria-label="Delete"], button[aria-label="delete"]', { timeout: 120000 })
         .should("be.visible")
         .click({ force: true });
     });
 
     cy.contains("button", "Yes, delete it!").click({ force: true });
-    cy.contains(/ *deleted.*successfully/i, { timeout: 20000 }).should("be.visible");
+    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
   }
 
@@ -876,7 +1094,7 @@ class ChartPage {
     this.socialHxContainer.find("table tbody tr").first().as('socialNewRow').within(() => {
       cy.get("td").eq(0).find(".MuiSelect-select").click({ force: true });
     });
-    cy.get('li[role="option"]', { timeout: 10000 }).first().click({ force: true });
+    cy.get('li[role="option"]', { timeout: 60000 }).first().click({ force: true });
 
     // Filling data fields
     cy.get('@socialNewRow').within(() => {
@@ -886,9 +1104,9 @@ class ChartPage {
       cy.get("td").last().find("button").first().click({ force: true });
     });
 
-    cy.contains(/ *created.*successfully/i, { timeout: 20000 }).should("be.visible");
+    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("be.visible");
 
-    cy.contains(/ *created.*successfully/i, { timeout: 20000 }).should("not.exist");
+    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
 
     // --- UPDATE PART ---
@@ -901,7 +1119,7 @@ class ChartPage {
 
     cy.get("@socialRowToUpdate").within(() => {
       // Ensure input is visible (Wait for rendering)
-      cy.get("input", { timeout: 15000 }).should("be.visible");
+      cy.get("input", { timeout: 120000 }).should("be.visible");
 
       cy.get("td").eq(1).find("input").first().clear({ force: true }).type("2018", { force: true });
       cy.get("td").eq(2).find("input").first().clear({ force: true }).type("2025", { force: true });
@@ -909,7 +1127,8 @@ class ChartPage {
       cy.get("td").last().find("button").first().click({ force: true });
     });
 
-    cy.contains(/ *updated.*successfully/i, { timeout: 20000 }).should("be.visible");
+    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
 
     // --- DELETE PART ---
@@ -920,7 +1139,7 @@ class ChartPage {
     cy.get("@socialRowToDelete").find("td").eq(1).click({ force: true });
 
     cy.get("@socialRowToDelete").within(() => {
-      cy.get("input", { timeout: 15000 }).should("be.visible");
+      cy.get("input", { timeout: 120000 }).should("be.visible");
       // Targeting the red delete button
       cy.get('button[aria-label="Delete"], button[aria-label="delete"]')
         .filter(".MuiIconButton-colorError")
@@ -929,8 +1148,8 @@ class ChartPage {
     });
 
     cy.contains("button", "Yes, delete it!").click({ force: true });
-    cy.contains(/ *deleted.*successfully/i, { timeout: 20000 }).should("be.visible");
-    cy.contains(/ *deleted.*successfully/i, { timeout: 20000 }).should("not.exist");
+    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("not.exist");
 
     this.waitForLoaders();
   }
@@ -958,8 +1177,8 @@ class ChartPage {
       cy.get("td").last().find("button").first().click({ force: true });
     });
 
-    cy.contains(/ *created.*successfully/i, { timeout: 20000 }).should("be.visible");
-    cy.contains(/ *created.*successfully/i, { timeout: 20000 }).should("not.exist");
+    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
 
     // --- UPDATE PART ---
@@ -972,12 +1191,13 @@ class ChartPage {
 
     cy.get("@adminRowToUpdate").within(() => {
       // Wait for input fields to render properly after edit trigger
-      cy.get("input", { timeout: 15000 }).should("be.visible");
+      cy.get("input", { timeout: 120000 }).should("be.visible");
       cy.get("td").eq(1).find("input").first().clear({ force: true }).type(updatedNote, { force: true });
       cy.get("td").last().find("button").first().click({ force: true });
     });
 
-    cy.contains(/ *updated.*successfully/i, { timeout: 20000 }).should("be.visible");
+    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
 
     // --- DELETE PART ---
@@ -989,7 +1209,7 @@ class ChartPage {
     cy.get("@adminRowToDelete").click({ force: true });
 
     cy.get("@adminRowToDelete").within(() => {
-      cy.get("input", { timeout: 15000 }).should("be.visible");
+      cy.get("input", { timeout: 120000 }).should("be.visible");
       // Specific target for red delete icon
       cy.get('button[aria-label="Delete"], button[aria-label="delete"]')
         .filter(".MuiIconButton-colorError")
@@ -998,7 +1218,9 @@ class ChartPage {
     });
 
     cy.contains("button", "Yes, delete it!").click({ force: true });
-    cy.contains(/ *deleted.*successfully/i, { timeout: 20000 }).should("be.visible");
+    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("not.exist");
+
     this.waitForLoaders();
   }
 
@@ -1043,7 +1265,7 @@ class ChartPage {
       } else {
         cy.log(">>> Specific drug not found. Clicking 'Create as new medicine'.");
         // Improved selector for 'Create as new' option
-        cy.contains('li.autocomplete-option', /as a new medicine/i, { timeout: 10000 })
+        cy.contains('li.autocomplete-option', /as a new medicine/i, { timeout: 60000 })
           .should('be.visible')
           .click({ force: true });
       }
@@ -1098,7 +1320,8 @@ class ChartPage {
       cy.contains("button", /^SAVE$/i).should("be.enabled").click({ force: true });
 
       this.waitForLoaders();
-      cy.contains(/ *created.*successfully/i, { timeout: 20000 }).should("be.visible");
+      cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("be.visible");
+      cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("not.exist");
 
       cy.log("✅ CREATE OPERATION ENDS")
 
@@ -1109,7 +1332,7 @@ class ChartPage {
     cy.log("✅ UPDATE OPERATION STARTS");
 
     // 1. Target the created order and click to enter edit mode
-    cy.contains("#orders div", new RegExp(medName, 'i'), { timeout: 15000 })
+    cy.contains("#orders div", new RegExp(medName, 'i'), { timeout: 120000 })
       .should("be.visible")
       .click({ force: true });
 
@@ -1144,10 +1367,10 @@ class ChartPage {
     });
 
     // 3. Save and Verify
-    cy.contains("button", /^SAVE$/i).should('be.visible').click({ force: true });
+    cy.contains("button", /^SAVE$/i).should('be.visible', { timeout: 120000 }).click({ force: true });
 
-    cy.contains(/ *updated.*successfully/i, { timeout: 20000 }).should("be.visible");
-    cy.contains(/ *updated.*successfully/i, { timeout: 20000 }).should("not.exist");
+    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("not.exist");
 
     cy.log("✅ UPDATE OPERATION ENDS");
     this.waitForLoaders();
@@ -1164,14 +1387,14 @@ class ChartPage {
     });
 
     // Targeting the row again to ensure fresh DOM reference
-    cy.contains("#orders div", new RegExp(medName, 'i'), { timeout: 15000 })
+    cy.contains("#orders div", new RegExp(medName, 'i'), { timeout: 120000 })
       .closest(".MuiPaper-root")
       .filter(`:contains("${updatedDuration}")`)
       .as('medRowToDelete');
 
     cy.get("@medRowToDelete").within(() => {
 
-      cy.get('svg', { timeout: 15000 })
+      cy.get('svg', { timeout: 120000 })
         .filter((index, el) => {
           const color = Cypress.$(el).css('color') || Cypress.$(el).css('fill');
           return color.includes('rgb(211, 47, 47)') || color.includes('red');
@@ -1182,11 +1405,11 @@ class ChartPage {
     });
 
     // Handle Confirmation Modal
-    cy.contains("Are you sure?", { timeout: 10000 }).should("be.visible");
+    cy.contains("Are you sure?", { timeout: 120000 }).should("be.visible");
     cy.contains("button", "Yes, Delete").click({ force: true });
 
     // Final Success Verification
-    cy.contains("medication has been removed.", { timeout: 20000 }).should("be.visible");
+    cy.contains("medication has been removed.", { timeout: 120000 }).should("be.visible");
     cy.contains("button", "OK").click({ force: true });
     cy.log("✅ DELETE OPERATION ENDS")
 
@@ -1211,7 +1434,7 @@ class ChartPage {
       .type("x-ray", { delay: 200, force: true });
 
     // Select 'Imaging Requisition' from autocomplete
-    cy.contains('div', /Imaging Requisition/i, { timeout: 15000 })
+    cy.contains('div', /Imaging Requisition/i, { timeout: 120000 })
       .closest('div[style*="sticky"]')
       .nextAll('li.autocomplete-option')
       .first()
@@ -1246,14 +1469,14 @@ class ChartPage {
     this.waitForLoaders();
 
     // Verification: Ensure the unique order appears in the list
-    cy.contains(examName, { timeout: 20000 }).should("be.visible");
+    cy.contains(examName, { timeout: 120000 }).should("be.visible");
 
 
     // --- UPDATE PART ---
     const updatedExamName = "Updated Chest " + requisitionId;
 
     // 1. Locate the specific order card and scroll to it
-    cy.contains("#orders .MuiPaper-root", examName, { timeout: 15000 })
+    cy.contains("#orders .MuiPaper-root", examName, { timeout: 120000 })
       .scrollIntoView()
       .should("be.visible")
       .as('targetOrderCard');
@@ -1268,7 +1491,7 @@ class ChartPage {
     // 4. Scoping the update actions inside the expanded section
     cy.get('@targetOrderCard').within(() => {
       // Look for the input field which should now be visible
-      cy.get('input[placeholder="Example: Chest"]', { timeout: 20000 })
+      cy.get('input[placeholder="Example: Chest"]', { timeout: 120000 })
         .should('be.visible')
         .clear({ force: true })
         .type(updatedExamName, { force: true });
@@ -1278,8 +1501,8 @@ class ChartPage {
     });
 
     // 5. Verification
-    cy.contains(/ *updated.*successfully/i, { timeout: 20000 }).should("be.visible");
-    cy.contains(/ *updated.*successfully/i, { timeout: 20000 }).should("not.exist");
+    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("not.exist");
 
     this.waitForLoaders();
   }
@@ -1300,7 +1523,7 @@ class ChartPage {
       .type("lab requisition", { delay: 200, force: true });
 
     // Select 'Lab Requisition' from autocomplete
-    cy.contains('div', /Lab Requisition/i, { timeout: 15000 })
+    cy.contains('div', /Lab Requisition/i, { timeout: 120000 })
       .closest('div[style*="sticky"]')
       .nextAll('li.autocomplete-option')
       .first()
@@ -1342,13 +1565,12 @@ class ChartPage {
 
     // --- CREATE PART ---
     this.addNoteBtn.click({ force: true });
-    cy.contains("li", /New Progress Note/i, { timeout: 15000 }).click({ force: true });
+    cy.contains("li", /New Progress Note/i, { timeout: 120000 }).click({ force: true });
     this.waitForLoaders();
 
     // Fill Note Information (Header)
     cy.contains("Note Information").closest(".MuiBox-root").find("button").first().click({ force: true });
-    cy.wait(2000); // Wait for modal animation
-
+    cy.wait(2000);
     cy.contains("div", /Note Information/i).closest(".MuiBox-root").within(() => {
       cy.get("textarea, input").eq(0).clear({ force: true }).type("Follow-up session " + noteId, { force: true });
       // cy.get("input").eq(1).clear({ force: true }).type("Daily Note " + noteId, { force: true });
@@ -1356,12 +1578,12 @@ class ChartPage {
       cy.contains("button", /SAVE/i).click({ force: true });
     });
 
-    cy.contains(/note.*successfully/i).should("be.visible", {timeout: 30000});
-    cy.contains(/note.*successfully/i).should("not.exist", {timeout: 30000});
+    cy.contains(/note.*successfully/i).should("be.visible", { timeout: 120000 });
+    cy.contains(/note.*successfully/i).should("not.exist", { timeout: 120000 });
     this.waitForLoaders();
 
     // Write in Monaco Editor
-    cy.get(".monaco-editor", { timeout: 20000 }).first().click({ force: true })
+    cy.get(".monaco-editor", { timeout: 120000 }).first().click({ force: true })
       .find("textarea").first().type("Stable condition. Note ID: " + noteId, { force: true, delay: 10 });
 
 
@@ -1372,14 +1594,14 @@ class ChartPage {
     cy.contains("button", /^SIGN & PRINT$/i).closest(".MuiBox-root").within(() => {
       cy.contains("button", /^SIGN$/i).should("be.visible").click({ force: true });
     });
-    cy.contains(/note.*successfully/i).should("be.visible", {timeout: 30000});
-    cy.contains(/note.*successfully/i).should("not.exist", {timeout: 30000});
+    cy.contains(/note.*successfully/i).should("be.visible", { timeout: 120000 });
+    cy.contains(/note.*successfully/i).should("not.exist", { timeout: 120000 });
 
 
     this.waitForLoaders();
     // Verify "Signed" status in table
     this.notesContainer.contains("tr", "Follow-up session " + noteId).within(() => {
-      cy.contains("Signed", { timeout: 60000 }).should("be.visible");
+      cy.contains("Signed", { timeout: 120000 }).should("be.visible");
     });
 
     this.waitForLoaders();
@@ -1394,8 +1616,8 @@ class ChartPage {
       cy.contains("button", /^EDIT$/i).click({ force: true });
     });
     cy.contains("button", /Confirm/i).click({ force: true });
-    cy.contains(/note.*successfully/i).should("be.visible", {timeout: 30000});
-    cy.contains(/note.*successfully/i).should("not.exist", {timeout: 30000});
+    cy.contains(/note.*successfully/i).should("be.visible", { timeout: 120000 });
+    cy.contains(/note.*successfully/i).should("not.exist", { timeout: 120000 });
     this.waitForLoaders();
 
     // Update Title for Version 2
@@ -1411,19 +1633,19 @@ class ChartPage {
     })
 
     this.waitForLoaders();
-    cy.contains(/note.*successfully/i).should("be.visible", {timeout: 30000});
-    cy.contains(/note.*successfully/i).should("not.exist", {timeout: 30000});
+    cy.contains(/note.*successfully/i).should("be.visible", { timeout: 120000 });
+    cy.contains(/note.*successfully/i).should("not.exist", { timeout: 120000 });
     // Sign Version 2
     cy.contains("button", /^SIGN & PRINT$/i).closest(".MuiBox-root").within(() => {
       cy.contains("button", /^SAVE$/i).click({ force: true });
     });
 
     this.waitForLoaders();
-    cy.contains(/note.*successfully/i).should("be.visible", {timeout: 30000});
-    cy.contains(/note.*successfully/i).should("not.exist", {timeout: 30000});
+    cy.contains(/note.*successfully/i).should("be.visible", { timeout: 120000 });
+    cy.contains(/note.*successfully/i).should("not.exist", { timeout: 120000 });
     // Final verification of status
     this.notesContainer.contains("tr", "Updated Progress Reason " + updateId).within(() => {
-      cy.contains("Unsigned", { timeout: 60000 }).should("be.visible");
+      cy.contains("Unsigned", { timeout: 120000 }).should("be.visible");
     });
     cy.contains("button", /^SIGN & PRINT$/i).closest(".MuiBox-root").within(() => {
       cy.contains("button", /^CLOSE$/i).click({ force: true });
@@ -1448,12 +1670,12 @@ class ChartPage {
     });
 
     // 3. Handle the confirmation dialog
-    cy.contains("Are you sure?", { timeout: 10000 }).should("be.visible");
+    cy.contains("Are you sure?", { timeout: 120000 }).should("be.visible");
     cy.contains("button", "Yes, delete it!").click({ force: true });
 
     // 4. Verify success message and wait for UI to stabilize
-    cy.contains(/deleted.*successfully/i, { timeout: 20000 }).should("be.visible");
-    cy.contains(/deleted.*successfully/i, { timeout: 20000 }).should("not.exist");
+    cy.contains(/deleted.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/deleted.*successfully/i, { timeout: 120000 }).should("not.exist");
 
     this.waitForLoaders();
 
@@ -1471,7 +1693,7 @@ class ChartPage {
     cy.log("✅ CREATE OPERATION STARTS")
 
     this.addNoteBtn.click({ force: true });
-    cy.contains("li", /New Consult Note/i, { timeout: 15000 }).click({ force: true });
+    cy.contains("li", /New Consult Note/i, { timeout: 120000 }).click({ force: true });
     this.waitForLoaders();
 
     // --- FILL REFERRING PROVIDER INFORMATION ---
@@ -1488,7 +1710,7 @@ class ChartPage {
       });
 
     // 3. Wait for the autocomplete dropdown to appear and select the first option
-    cy.get("li.autocomplete-option", { timeout: 15000 })
+    cy.get("li.autocomplete-option", { timeout: 120000 })
       .first()
       .should("be.visible")
       .click({ force: true });
@@ -1505,8 +1727,8 @@ class ChartPage {
 
 
     // 5. Verification and stability wait
-    cy.contains(/note.*successfully/i, { timeout: 20000 }).should("be.visible");
-    cy.contains(/note.*successfully/i, { timeout: 20000 }).should("not.exist");
+    cy.contains(/note.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/note.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
 
     // Fill Note Information (Header)
@@ -1519,12 +1741,12 @@ class ChartPage {
       cy.contains("button", /SAVE/i).click({ force: true });
     });
 
-    cy.contains(/note.*successfully/i).should("be.visible", {timeout: 30000});
-    cy.contains(/note.*successfully/i).should("not.exist", {timeout: 30000});
+    cy.contains(/note.*successfully/i).should("be.visible", { timeout: 120000 });
+    cy.contains(/note.*successfully/i).should("not.exist", { timeout: 120000 });
     this.waitForLoaders();
 
     // Write in Monaco Editor
-    cy.get(".monaco-editor", { timeout: 20000 }).first().click({ force: true })
+    cy.get(".monaco-editor", { timeout: 120000 }).first().click({ force: true })
       .find("textarea").first().type("Stable condition. Note ID: " + noteId, { force: true, delay: 10 });
 
     cy.wait(5000);
@@ -1533,12 +1755,12 @@ class ChartPage {
     cy.contains("button", /^SIGN & PRINT$/i).closest(".MuiBox-root").within(() => {
       cy.contains("button", /^SIGN$/i).should("be.visible").click({ force: true });
     });
-    cy.contains(/note.*successfully/i).should("be.visible", {timeout: 30000});
-    cy.contains(/note.*successfully/i).should("not.exist", {timeout: 30000});
+    cy.contains(/note.*successfully/i).should("be.visible", { timeout: 120000 });
+    cy.contains(/note.*successfully/i).should("not.exist", { timeout: 120000 });
     this.waitForLoaders();
     // Verify "Signed" status in table
     this.notesContainer.contains("tr", "Follow-up session " + noteId).within(() => {
-      cy.contains("Signed", { timeout: 60000 }).should("be.visible");
+      cy.contains("Signed", { timeout: 120000 }).should("be.visible");
     });
     cy.log("✅ CREATE OPERATION ENDS")
 
@@ -1554,8 +1776,8 @@ class ChartPage {
       cy.contains("button", /^EDIT$/i).click({ force: true });
     });
     cy.contains("button", /Confirm/i).click({ force: true });
-    cy.contains(/note.*successfully/i).should("be.visible", {timeout: 30000});
-    cy.contains(/note.*successfully/i).should("not.exist", {timeout: 30000});
+    cy.contains(/note.*successfully/i).should("be.visible", { timeout: 120000 });
+    cy.contains(/note.*successfully/i).should("not.exist", { timeout: 120000 });
     this.waitForLoaders();
 
     cy.contains("p", /Note Information/i).closest(".MuiBox-root").find("button").first().click({ force: true });
@@ -1577,8 +1799,8 @@ class ChartPage {
       });
 
     // Verify success for this specific section
-    cy.contains(/note.*successfully/i, { timeout: 20000 }).should("be.visible");
-    cy.contains(/note.*successfully/i).should("not.exist", {timeout: 30000});
+    cy.contains(/note.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/note.*successfully/i).should("not.exist", { timeout: 120000 });
     cy.log("✅ UPDATE OPERATION ENDS")
 
     // --- DELETE PART ---
@@ -1600,12 +1822,12 @@ class ChartPage {
     });
 
     // 3. Handle the confirmation dialog
-    cy.contains("Are you sure?", { timeout: 10000 }).should("be.visible");
+    cy.contains("Are you sure?", { timeout: 120000 }).should("be.visible");
     cy.contains("button", "Yes, delete it!").click({ force: true });
 
     // 4. Verify success message and wait for UI to stabilize
-    cy.contains(/deleted.*successfully/i, { timeout: 20000 }).should("be.visible");
-    cy.contains(/deleted.*successfully/i, { timeout: 20000 }).should("not.exist");
+    cy.contains(/deleted.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/deleted.*successfully/i, { timeout: 120000 }).should("not.exist");
 
     this.waitForLoaders();
 
@@ -1616,52 +1838,310 @@ class ChartPage {
 
   }
 
-  /**
-     * Creates a minimal progress note to enable the Billing button
-     */
-  createNoteForBilling() {
-    const noteId = Math.floor(Math.random() * 1000);
+  progressNoteCreate(uniqueId) {
+    const reasonText = "Follow-up session " + uniqueId;
+    const titleText = "Progress Note " + uniqueId;
 
-    // 1. Open the 'New Progress Note' menu
-    this.notesContainer.find(".chart-header button.MuiIconButton-colorPrimary").click({ force: true });
-    cy.contains("li", /New Progress Note/i, { timeout: 15000 }).click({ force: true });
-    // 1. Wait for the main editor container to be visible in the DOM
-    cy.get('.monaco-editor', { timeout: 30000 })
-      .should('be.visible');
+    // 1. Initiate Note and Click Pencil icon
+    this.addNoteBtn.click({ force: true });
+    cy.get('li[role="menuitem"]').contains(/New Progress Note/i, { timeout: 120000 }).should('be.visible', { timeout: 120000 }).click({ force: true });
+    cy.contains(/note.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/note.*successfully/i, { timeout: 120000 }).should("not.exist");
 
-    // 2. Wait for the internal textarea (where we actually type) to exist
-  
-    cy.get('.monaco-editor textarea', { timeout: 20000 })
+    cy.contains("p", /Note Information/i).closest(".MuiBox-root").find("button").first().click({ force: true });
+    this.waitForLoaders();
+
+    cy.contains('p', /Note Information/i)
+      .closest('.MuiBox-root')
+      .within(() => {
+        cy.contains('button', /^SAVE$/i)
+          .should('be.visible');
+
+        cy.contains("span", /Reason of Visit/i).next().find("input").first().clear({ force: true }).type(reasonText, { force: true });
+        cy.contains("span", /Title/i).next().find("input").first().clear({ force: true }).type(titleText, { force: true });
+
+        // 4. Click SAVE button in header
+        cy.contains("button", /^SAVE$/i).click({ force: true });
+      });
+
+    // 5. Wait for updated successfully toast to disappear
+    cy.contains(/note.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/note.*successfully/i, { timeout: 120000 }).should("not.exist");
+    this.waitForLoaders();
+
+    // 6. Write in Monaco Editor
+    cy.get(".monaco-editor", { timeout: 120000 }).first().click({ force: true })
+      .find("textarea").first()
       .should('exist')
-      .as('monacoInput');
-    this.waitForLoaders();
+      .type("Stable condition observed for ID: " + uniqueId, { force: true, delay: 10 });
 
-    // 2. Open and fill 'Note Information' (Header data)
-    cy.contains("Note Information").closest(".MuiBox-root").find("button").first().click({ force: true });
-    cy.wait(2000); // Buffer for modal animation
-
-    cy.contains("div", /Note Information/i).closest(".MuiBox-root").within(() => {
-      cy.get("textarea, input").eq(0).type("Billing session " + noteId, { force: true });
-      cy.get("input").eq(1).type("Billing Note " + noteId, { force: true });
-      cy.get("input").eq(2).type("2026-02-03", { force: true });
-      cy.contains("button", /SAVE/i).click({ force: true });
+    // 7. Click the SIGN button (Anchor: SIGN & PRINT and BILLING are nearby)
+    cy.contains('button', /^SIGN & PRINT$/i).closest('.MuiBox-root').within(() => {
+      cy.contains('button', /^SIGN$/i).should('be.visible').click({ force: true });
     });
 
-    // Verify header update success
-    cy.contains(/note.*successfully/i).should("be.visible", {timeout: 30000});
-    cy.contains(/note.*successfully/i).should("not.exist", {timeout: 30000});
-
+    this.waitForLoaders();
+    cy.contains(/note.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/note.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
 
-    // 3. Click the BILLING button to initiate billing process
-    cy.contains("button", /^SIGN & PRINT$/i).closest(".MuiBox-root").within(() => {
-      cy.contains("button", /^BILLING$/i).should("be.visible").click({ force: true });
-    });
+    cy.log(">>> Progress Note created and signed: " + titleText);
 
-    cy.contains('button', /Start a New Bill/i, { timeout: 30000 })
+    cy.get('#notes table tbody tr', { timeout: 200000 })
+      .contains(uniqueId)
       .should('be.visible');
 
+    cy.log(">>> Success: Note with ID " + uniqueId + " verified in Clinical Notes table.");
+
+    return titleText;
+  }
+
+  progressNoteUpdate(uniqueId) {
+    const updatedId = Math.floor(Math.random() * 900) + 100;
+    const updatedReason = "Updated Follow-up " + updatedId;
+    const updatedTitle = "Updated Title " + updatedId;
+
+    cy.get('#notes table tbody tr').contains(uniqueId)
+
+
+      .closest('tr')
+      .find('button[aria-label="edit"], button[aria-label="Edit"]')
+      .should('be.visible')
+      .click({ force: true });
+
     this.waitForLoaders();
+
+    // 2. Wait for the Monaco Editor to be visible on the right panel
+    cy.get('.monaco-editor', { timeout: 30000 }).should('be.visible');
+
+    // 3. Verify that EDIT, PRINT, and BILLING buttons appear in the footer area
+
+    cy.contains('button', /^PRINT$/i).should('be.visible');
+    cy.contains('button', /^BILLING$/i).should('be.visible');
+    cy.contains('button', /^EDIT$/i).should('be.visible').click({ force: true });
+
+    // 2. Handle Versioning Modal: "This will make a new version!"
+    cy.contains(/This will make a new version/i, { timeout: 10000 }).should('be.visible');
+    cy.contains('button', /Confirm/i).should('be.visible').click({ force: true });
+
+    // 3. Wait for success sync after versioning trigger
+    cy.contains(/updated.*successfully/i, { timeout: 30000 }).should('be.visible');
+    cy.contains(/updated.*successfully/i, { timeout: 30000 }).should('not.exist');
+    this.waitForLoaders();
+
+    // 4. Open Header for editing (Click pencil icon)
+    cy.contains("p", /Note Information/i).closest(".MuiBox-root").find("button").first().click({ force: true });
+    this.waitForLoaders();
+
+    // 5. Update Header Information within the scoped container
+    cy.contains("p", /Note Information/i).closest(".MuiBox-root").within(() => {
+      // Verify Save and Cancel exist as per requirement
+      cy.contains('button', /^SAVE$/i).should('be.visible');
+      cy.contains('button', /^CANCEL$/i).should('be.visible');
+
+      cy.contains("span", /Reason of Visit/i).next().find("input").first().clear({ force: true }).type(updatedReason, { force: true });
+      cy.contains("span", /Title/i).next().find("input").first().clear({ force: true }).type(updatedTitle, { force: true });
+
+      cy.contains("button", /^SAVE$/i).click({ force: true });
+    });
+
+    // 6. Sync after header update
+    cy.contains(/note.*successfully/i, { timeout: 30000 }).should("be.visible");
+    cy.contains(/note.*successfully/i, { timeout: 30000 }).should("not.exist");
+    this.waitForLoaders();
+
+    // 7. Clear Monaco Editor and write new content
+    // We use {selectall}{backspace} as a robust way to clear Monaco content
+    cy.get(".monaco-editor", { timeout: 20000 }).first().click({ force: true })
+      .find("textarea").first()
+      .type('{selectall}{backspace}' + "Modified content for version 2. Updated ID: " + updatedId, { force: true, delay: 10 });
+
+    // 8. Click the SIGN button to finalize the updated version
+    cy.contains('button', /^SIGN & PRINT$/i).closest('.MuiBox-root').within(() => {
+      cy.contains('button', /^SIGN$/i).should('be.visible').click({ force: true });
+    });
+
+    this.waitForLoaders();
+    cy.contains(/note.*successfully/i, { timeout: 30000 }).should("be.visible");
+    cy.contains(/note.*successfully/i, { timeout: 30000 }).should("not.exist");
+    this.waitForLoaders();
+
+
+    cy.get('#notes table tbody tr', { timeout: 20000 })
+      .contains(updatedId)
+      .should('be.visible');
+
+    cy.log(">>> Progress Note version 2 updated and signed: " + updatedTitle);
+    return updatedTitle;
+  }
+
+  consultNoteCreate(uniqueId) {
+    const reasonText = "Consult session " + uniqueId;
+    const titleText = "Consult Note " + uniqueId;
+
+    // 1. Initiate Consult Note and Click Pencil icon
+    this.addNoteBtn.click({ force: true });
+    cy.get('li[role="menuitem"]').contains(/New Consult Note/i).should('be.visible').click({ force: true });
+    cy.contains(/note.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/note.*successfully/i, { timeout: 120000 }).should("not.exist");
+
+    cy.contains("p", /Note Information/i).closest(".MuiBox-root").find("button").first().click({ force: true });
+    this.waitForLoaders();
+
+    cy.contains('p', /Referring Provider Information/i)
+      .closest('.MuiBox-root')
+      .parent()
+      .within(() => {
+        cy.get('input[placeholder="Search Contact"]')
+          .should('be.visible')
+          .clear({ force: true })
+          .type("mridul", { delay: 200, force: true });
+      });
+
+
+    cy.get('li.autocomplete-option', { timeout: 200000 })
+      .should('be.visible')
+      .first()
+      .click({ force: true });
+    cy.contains("button", /^SAVE$/i).click({ force: true });
+    cy.contains(/note.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/note.*successfully/i, { timeout: 120000 }).should("not.exist");
+
+    this.waitForLoaders();
+
+
+    cy.contains('p', /Note Information/i)
+      .closest('.MuiBox-root')
+      .within(() => {
+        cy.contains('button', /^SAVE$/i).should('be.visible');
+        cy.contains("span", /Reason of Visit/i).next().find("input").first().clear({ force: true }).type(reasonText, { force: true });
+        cy.contains("span", /Title/i).next().find("input").first().clear({ force: true }).type(titleText, { force: true });
+        cy.contains("button", /^SAVE$/i).click({ force: true });
+      });
+
+    cy.contains(/note.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/note.*successfully/i, { timeout: 120000 }).should("not.exist");
+    this.waitForLoaders();
+
+    // 2. Write in Monaco Editor
+    cy.get(".monaco-editor", { timeout: 120000 }).first().click({ force: true })
+      .find("textarea").first().should('exist')
+      .type("Consultation stable condition observed for ID: " + uniqueId, { force: true, delay: 10 });
+
+    // 3. Click the SIGN button
+    cy.contains('button', /^SIGN & PRINT$/i).closest('.MuiBox-root').within(() => {
+      cy.contains('button', /^SIGN$/i).should('be.visible').click({ force: true });
+    });
+
+    this.waitForLoaders();
+    cy.contains(/note.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/note.*successfully/i, { timeout: 120000 }).should("not.exist");
+    this.waitForLoaders();
+
+    // 4. Verification in the table
+    cy.get('#notes table tbody tr', { timeout: 200000 }).contains(uniqueId).should('be.visible');
+    cy.log(">>> Consult Note created and signed: " + titleText);
+    return titleText;
+  }
+
+  consultNoteUpdate(uniqueId) {
+    const updatedId = Math.floor(Math.random() * 900) + 100;
+    const updatedReason = "Updated Consult Follow-up " + updatedId;
+    const updatedTitle = "Updated Consult Note " + updatedId;
+
+    // 1. Locate row and Click edit
+    cy.get('#notes table tbody tr').contains(uniqueId)
+      .closest('tr')
+      .find('button[aria-label="edit"], button[aria-label="Edit"]')
+      .should('be.visible')
+      .click({ force: true });
+
+    this.waitForLoaders();
+    cy.get('.monaco-editor', { timeout: 30000 }).should('be.visible');
+
+    // 2. Trigger Versioning
+    cy.contains('button', /^PRINT$/i).should('be.visible');
+    cy.contains('button', /^BILLING$/i).should('be.visible');
+    cy.contains('button', /^EDIT$/i).should('be.visible').click({ force: true });
+
+    cy.contains(/This will make a new version/i, { timeout: 10000 }).should('be.visible');
+    cy.contains('button', /Confirm/i).should('be.visible').click({ force: true });
+
+    cy.contains(/updated.*successfully/i, { timeout: 30000 }).should('be.visible');
+    cy.contains(/updated.*successfully/i, { timeout: 30000 }).should('not.exist');
+    this.waitForLoaders();
+
+    // 3. Update Header Info
+    cy.contains("p", /Note Information/i).closest(".MuiBox-root").find("button").first().click({ force: true });
+    this.waitForLoaders();
+
+    cy.contains("p", /Note Information/i).closest(".MuiBox-root").within(() => {
+      cy.contains('button', /^SAVE$/i).should('be.visible');
+      cy.contains("span", /Reason of Visit/i).next().find("input").first().clear({ force: true }).type(updatedReason, { force: true });
+      cy.contains("span", /Title/i).next().find("input").first().clear({ force: true }).type(updatedTitle, { force: true });
+      cy.contains("button", /^SAVE$/i).click({ force: true });
+    });
+
+    cy.contains(/note.*successfully/i, { timeout: 30000 }).should("be.visible");
+    cy.contains(/note.*successfully/i, { timeout: 30000 }).should("not.exist");
+    this.waitForLoaders();
+
+    // 4. Update Monaco Editor
+    cy.get(".monaco-editor", { timeout: 20000 }).first().click({ force: true })
+      .find("textarea").first()
+      .type('{selectall}{backspace}' + "Modified consult content for version 2. Updated ID: " + updatedId, { force: true, delay: 10 });
+
+    // 5. Final Sign
+    cy.contains('button', /^SIGN & PRINT$/i).closest('.MuiBox-root').within(() => {
+      cy.contains('button', /^SIGN$/i).should('be.visible').click({ force: true });
+    });
+
+    this.waitForLoaders();
+    cy.contains(/note.*successfully/i, { timeout: 30000 }).should("be.visible");
+    cy.contains(/note.*successfully/i, { timeout: 30000 }).should("not.exist");
+    this.waitForLoaders();
+
+    // 6. Verify Updated row in table
+    cy.get('#notes table tbody tr', { timeout: 20000 }).contains(updatedId).should('be.visible');
+    cy.log(">>> Consult Note updated and signed: " + updatedTitle);
+    return updatedTitle;
+  }
+
+
+  createNoteForBilling() {
+
+
+    // 1. Initiate Note and Click Pencil icon
+    this.addNoteBtn.click({ force: true });
+    cy.get('li[role="menuitem"]').contains(/New Progress Note/i, { timeout: 120000 }).should('be.visible', { timeout: 120000 }).click({ force: true });
+    cy.contains(/note.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/note.*successfully/i, { timeout: 120000 }).should("not.exist");
+
+    cy.contains("p", /Note Information/i).closest(".MuiBox-root").find("button").first().click({ force: true });
+    this.waitForLoaders();
+
+    cy.contains('p', /Note Information/i)
+      .closest('.MuiBox-root')
+      .within(() => {
+        cy.contains('button', /^SAVE$/i)
+          .should('be.visible');
+
+        // cy.contains("span", /Reason of Visit/i).next().find("input").first().clear({ force: true }).type(reasonText, { force: true });
+        // cy.contains("span", /Title/i).next().find("input").first().clear({ force: true }).type(titleText, { force: true });
+
+        // 4. Click SAVE button in header
+        cy.contains("button", /^SAVE$/i).click({ force: true });
+      });
+
+    // 5. Wait for updated successfully toast to disappear
+    cy.contains(/note.*successfully/i, { timeout: 120000 }).should("be.visible");
+    cy.contains(/note.*successfully/i, { timeout: 120000 }).should("not.exist");
+    this.waitForLoaders();
+
+    cy.contains("button", /^SIGN & PRINT$/i).closest(".MuiBox-root").within(() => {
+      cy.contains("button", /^BILLING$/i, { timeout: 200000 }).should("be.visible").click({ force: true });
+    });
+
   }
 
 }

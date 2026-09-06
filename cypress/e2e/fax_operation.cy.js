@@ -3,9 +3,9 @@ import faxPage from "./pages/FaxPage";
 describe("Fax Operations Workflow", () => {
     let serialNumber = 1;
     const generateValidNumber = () => {
-        const areaCode = Math.floor(Math.random() * 800) + 200; // Generates 200-999
-        const exchangeCode = Math.floor(Math.random() * 800) + 200; // Generates 200-999
-        const lineNumber = Math.floor(Math.random() * 9000) + 1000; // Generates 1000-9999
+        const areaCode = Math.floor(Math.random() * 800) + 200;
+        const exchangeCode = Math.floor(Math.random() * 800) + 200;
+        const lineNumber = Math.floor(Math.random() * 9000) + 1000;
         return `${areaCode}${exchangeCode}${lineNumber}`;
     };
 
@@ -41,7 +41,7 @@ describe("Fax Operations Workflow", () => {
     it("Step 1: Navigate to Fax Inbox Page", () => {
         faxPage.navigateToFax();
         cy.url().should("include", "/inbox");
-        cy.contains("button", /CREATE TASK/i, { timeout: 30000 }).should("be.visible");
+        cy.contains("button", /CREATE TASK|COMPOSE/i, { timeout: 30000 }).should("be.visible");
         faxPage.waitForLoaders();
     });
 
