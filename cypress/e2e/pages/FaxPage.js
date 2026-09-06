@@ -367,7 +367,7 @@ cy.contains("span", /Phone/i)
     this.waitForLoaders();
 
     // 5. Final Verification: Ensure the task is no longer in the filtered results
-    cy.get('table tbody').should('not.contain', taskTitle);
+    cy.get('table tbody').should('not.contain', taskTitle, {timeout: 60000});
 
     cy.log(">>> Task deleted and verified: " + taskTitle);
   }

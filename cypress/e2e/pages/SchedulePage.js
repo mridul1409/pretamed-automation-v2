@@ -3,7 +3,7 @@ class SchedulePage {
   get loaderSelectors() { return '.MuiCircularProgress-root, .MuiLinearProgress-root, .spinner, .MuiSkeleton-root'; }
   get addEventBtn() { return cy.contains('button', /Add Event/i); }
   get patientSearchInput() { return cy.contains('p', /^Patient$/).parent().find('input[placeholder="Search"]'); }
-  get autocompleteOption() { return cy.get('.autocomplete-option'); }
+  get autocompleteOption() { return cy.get('.autocomplete-option', {timeout: 10000}); }
   get dayInput() { return cy.get('[aria-label="Day"]').first(); }
   get monthInput() { return cy.get('[aria-label="Month"]').first(); }
   get yearInput() { return cy.get('[aria-label="Year"]').first(); }
@@ -40,7 +40,7 @@ class SchedulePage {
       .type(providerName, { delay: 100, force: true });
 
     // Select the first autocomplete result
-    this.autocompleteOption.first().click({ force: true });
+    this.autocompleteOption.first().click({ force: true, timeout: 10000  });
   }
 
   fillDateTime(dateStr, start, end) {

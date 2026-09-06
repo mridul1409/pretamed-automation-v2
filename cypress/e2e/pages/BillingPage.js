@@ -384,20 +384,16 @@ class BillingPage {
    * and verifies the successful return to the patient chart.
    */
   closeDrawerAndVerifyReturn() {
-    // 1. Identify the specific footer container using the SIGN & PRINT button
-    cy.contains("button", /^SIGN & PRINT$/i)
-      .closest(".MuiBox-root")
-      .within(() => {
-        // 2. Locate and click the CLOSE button within this specific scope
-        cy.contains("button", /^CLOSE$/i)
-          .should("be.visible")
-          .click({ force: true });
-      });
+ cy.get('button[aria-label="Cancel"]', { timeout: 150000 })
+      .filter('.MuiIconButton-colorError')
+      .should('be.visible')
+      .click({ force: true });
 
-    // 3. Wait for all background processing to finish
+    cy.get('.monaco-editor').should('not.exist');
     this.waitForLoaders();
 
-    // 4. Verification: Wait for the main chart button to confirm UI stability
+    this.waitForLoaders();
+
     cy.contains("button", /NEW PROGRESS NOTE/i, { timeout: 30000 }).should(
       "be.visible",
     );

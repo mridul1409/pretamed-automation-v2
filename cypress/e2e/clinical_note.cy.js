@@ -2,7 +2,7 @@ import chartPage from "./pages/ChartPage";
 import orgPage from "./pages/OrgPage";
 import patientPage from "./pages/PatientPage";
 
-describe("Patient Chart Clinical Operations", () => {
+describe("Clinical Note Operations", () => {
     let serialNumber = 1;
     let currentOpInfo = null;
 
@@ -10,8 +10,8 @@ describe("Patient Chart Clinical Operations", () => {
     const TARGET_PATIENT = Cypress.env("TARGET_PATIENT_NAME");
 
     const TEST_DATA = {
-        targetOrg: "ABC",
-        targetPatient: "Kidd, James"
+        targetOrg: "Alpha Clinic",
+        targetPatient: " Poe, Edgar Allen"
     };
 
     before(() => {
@@ -48,34 +48,20 @@ describe("Patient Chart Clinical Operations", () => {
         chartPage.navigateToPatientChart(TEST_DATA.targetOrg, TEST_DATA.targetPatient);
     });
 
+    it("Progress Note", () => {
+        const myUniqueId = Math.floor(Math.random() * 900) + 100;
 
-    it("Progress Notes", () => {
-        currentOpInfo = { name: "Progress Notes", status: "PENDING" };
-
-        cy.get('body').then(($body) => {
-            if ($body.find("#notes").length > 0 && $body.find("#notes").is(':visible')) {
-                chartPage.progressNoteCRUD();
-                currentOpInfo.status = "PASSED";
-            } else {
-                currentOpInfo.status = "MISSING";
-                cy.log(">>> Progress Notes section is missing. Skipping...");
-            }
-        });
+        chartPage.progressNoteCreate(myUniqueId);
+        chartPage.progressNoteUpdate(myUniqueId);
     });
 
+    it("Consult Note Lifecycle: Create and Update", () => {
+        const myUniqueId = Math.floor(Math.random() * 900) + 100;
 
-    it("Consult Notes", () => {
-        currentOpInfo = { name: "Consult Notes", status: "PENDING" };
+        chartPage.consultNoteCreate(myUniqueId);
 
-        cy.get('body').then(($body) => {
-            if ($body.find("#notes").length > 0 && $body.find("#notes").is(':visible')) {
-                chartPage.consultNoteCRUD();
-                currentOpInfo.status = "PASSED";
-            } else {
-                currentOpInfo.status = "MISSING";
-                cy.log(">>> Consult Notes section is missing. Skipping...");
-            }
-        });
+        chartPage.consultNoteUpdate(myUniqueId);
     });
+
 
 });

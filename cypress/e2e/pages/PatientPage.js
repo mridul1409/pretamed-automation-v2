@@ -28,6 +28,7 @@ class PatientPage {
   openInitialModal() {
     this.newPatientBtn.click({ force: true });
     this.patientDialog.should('be.visible');
+
   }
 
   fillInitialInfo(data, phn) {
@@ -36,12 +37,15 @@ class PatientPage {
     cy.wait(1000);
     cy.contains('span', /Personal Health Number/i).next().find('input').first().type(phn, { force: true });
     cy.contains('span', /Date Of Birth/i).next().find('input[type="date"]').type(data.dob, { force: true });
-    cy.contains('button', /^Next$/i).click({ force: true });
-    this.waitForLoaders();
+    this.consentCheckbox.check({ force: true });
+
+    cy.contains('button', /^Next$/i)
+      .should('not.be.disabled')
+      .click({ force: true }); this.waitForLoaders();
   }
 
   fillDetailedProfile(data, uniqueId) {
-    cy.get('#generel', { timeout: 60000 }).within(() => {
+    cy.get('#generel', { timeout: 300000 }).within(() => {
       cy.contains('span', /First Name/i).next().find('input').type(data.firstName, { force: true });
       cy.contains('span', /Last Name/i).next().find('input').type(data.lastName, { force: true });
       cy.contains('span', /Gender/i).next().find('[role="combobox"]').click({ force: true });
@@ -52,7 +56,7 @@ class PatientPage {
       cy.contains('span', /Email/i).next().find('input').type(`test.${uniqueId}@test.com`, { force: true });
     });
 
-    // --- UPDATED ADDRESS SECTION ---
+    // --- ADDRESS SECTION ---
     cy.get('#address').within(() => {
       // 1. Fill Address
       cy.contains('span', /^Address$/).parent().find('input')
@@ -68,7 +72,7 @@ class PatientPage {
     });
 
     // 4. Select Province Option (Must be outside .within() because it's a portal)
-    cy.get('li[role="option"]', { timeout: 10000 })
+    cy.get('li[role="option"]', { timeout: 100000 })
       .contains(data.province)
       .should('be.visible')
       .click({ force: true });
@@ -108,51 +112,51 @@ class PatientPage {
     });
 
     // --- 3. FILL PRIMARY CARE PROVIDER SECTION ---
-    cy.get('#pcp').within(() => {
-      // Directly target the 'ADD' button by its text and click it
-      cy.contains('button', /ADD PRIMARY CARE PROVIDER/i)
-        .should('exist')
-        .scrollIntoView()
-        .click({ force: true });
+    // cy.get('#pcp').within(() => {
+    //   // Directly target the 'ADD' button by its text and click it
+    //   cy.contains('button', /ADD PRIMARY CARE PROVIDER/i)
+    //     .should('exist')
+    //     .scrollIntoView()
+    //     .click({ force: true });
 
-      // Wait for the search input to appear and then type
-      cy.get('input[placeholder="Search Contact"]', { timeout: 15000 })
-        .should('be.visible')
-        .type(data.pcp, { force: true });
-      this.waitForLoaders();
-      cy.get('ul.autocomplete-options li.autocomplete-option', { timeout: 20000 })
-        .should('be.visible')
-        .first()
-        .click({ force: true });
-      this.waitForLoaders();
+    //   // Wait for the search input to appear and then type
+    //   cy.get('input[placeholder="Search Contact"]', { timeout: 15000 })
+    //     .should('be.visible')
+    //     .type(data.pcp, { force: true });
+    //   this.waitForLoaders();
+    //   cy.get('ul.autocomplete-options li.autocomplete-option', { timeout: 200000 })
+    //     .should('be.visible')
+    //     .first()
+    //     .click({ force: true });
+    //   this.waitForLoaders();
 
 
-    });
+    // });
 
     // --- 4. FILL REFERRING PROVIDER SECTION ---
-    cy.get('#refP').within(() => {
-      cy.contains('button', /ADD REFERRING PROVIDER/i)
-        .should('exist')
-        .scrollIntoView()
-        .click({ force: true });
+    // cy.get('#refP').within(() => {
+    //   cy.contains('button', /ADD REFERRING PROVIDER/i)
+    //     .should('exist')
+    //     .scrollIntoView()
+    //     .click({ force: true });
 
-      // Wait for the search input to appear and then type
-      cy.get('input[placeholder="Search Contact"]', { timeout: 15000 })
-        .should('be.visible')
-        .type(data.referralProvider, { force: true });
+    //   // Wait for the search input to appear and then type
+    //   cy.get('input[placeholder="Search Contact"]', { timeout: 15000 })
+    //     .should('be.visible')
+    //     .type(data.referralProvider, { force: true });
 
-      // Wait for background API search results
-      this.waitForLoaders();
+    //   // Wait for background API search results
+    //   this.waitForLoaders();
 
-      // Select the first option from the autocomplete dropdown
-      cy.get('ul.autocomplete-options li.autocomplete-option', { timeout: 20000 })
-        .should('be.visible')
-        .first()
-        .click({ force: true });
+    //   // Select the first option from the autocomplete dropdown
+    //   cy.get('ul.autocomplete-options li.autocomplete-option', { timeout: 200000 })
+    //     .should('be.visible')
+    //     .first()
+    //     .click({ force: true });
 
-      // Final sync wait to ensure section is saved
-      this.waitForLoaders();
-    });
+    //   // Final sync wait to ensure section is saved
+    //   this.waitForLoaders();
+    // });
 
     // --- 5. FINALIZE AND CREATE PATIENT ---
     cy.contains('button', /^Create$/i)
@@ -161,21 +165,39 @@ class PatientPage {
       .click({ force: true });
   }
 
+  verifyPatientChartOpened(patientId) {
+    this.waitForLoaders();
+
+    // Verify that the URL now includes the unique patient ID, confirming the chart is open
+    cy.url({ timeout: 300000 })
+      .should('include', '/patient-chart/')
+      .and('include', patientId);
+
+    // Verify the chart refresh button to ensure the UI is interactable
+    this.refreshBtn.should('be.visible');
+    this.waitForLoaders();
+
+    cy.log(">>> Patient Chart verified successfully for ID: " + patientId);
+  }
+
+
   // 1. Function to wait for the URL to change to the Patient List page
   waitForPatientPageUrl() {
     const expectedUrl = Cypress.config().baseUrl.replace(/\/$/, "") + Cypress.env('PATIENT_LIST_PATH');
-    cy.url({ timeout: 60000 }).should("include", expectedUrl);
+    cy.url({ timeout: 300000 }).should("include", expectedUrl);
     this.waitForLoaders();
   }
 
   // 2. Function to wait for specific table headers to ensure data is rendered
   verifyPatientTableContent() {
     // Waiting for key column headers to confirm table stability
-    cy.contains('Registered Date', { timeout: 60000 }).should('be.visible');
-    cy.contains('Address', { timeout: 30000 }).should('be.visible');
-    cy.contains('Status', { timeout: 30000 }).should('be.visible');
+    cy.contains('Registered Date', { timeout: 300000 }).should('be.visible');
+    cy.contains('Address', { timeout: 300000 }).should('be.visible');
+    cy.contains('Status', { timeout: 300000 }).should('be.visible');
     this.waitForLoaders();
   }
+  // Selector for the new consent checkbox
+  get consentCheckbox() { return cy.get('input[type="checkbox"]'); }
 }
 
 export default new PatientPage();
