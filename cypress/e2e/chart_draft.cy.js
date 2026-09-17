@@ -48,6 +48,80 @@ describe("Patient Chart Clinical Operations", () => {
         chartPage.navigateToPatientChart(TEST_DATA.targetOrg, TEST_DATA.targetPatient);
     });
 
+    it("Allergy - Medication", () => {
+
+
+        const CREATE_MED_ALLERGY = {
+            substance: "Penic",
+            category: "Medication",
+            reaction: "Severe hives",
+            clinicalStatus: "Active",
+            verificationStatus: "Confirmed",
+            criticality: "High"
+        };
+
+        const UPDATE_MED_ALLERGY = {
+            substance: "Amoxic",
+            criticality: "Low"
+        };
+
+        chartPage.medicationAllergyCRUD(CREATE_MED_ALLERGY, UPDATE_MED_ALLERGY);
+    });
+
+    it("Allergy - Food", () => {
+        const CREATE_FOOD_ALLERGY = {
+            substance: "Peanut",
+            category: "Food",
+            reaction: "Hives and vomiting",
+            clinicalStatus: "Active",
+            verificationStatus: "Confirmed",
+            criticality: "High"
+        };
+
+        const UPDATE_FOOD_ALLERGY = {
+            substance: "Egg",
+            criticality: "Low"
+        };
+
+        chartPage.foodAllergyCRUD(CREATE_FOOD_ALLERGY, UPDATE_FOOD_ALLERGY);
+    });
+
+    it("Allergy - Environmental", () => {
+        const CREATE_ENV_ALLERGY = {
+            substance: "Dust",
+            category: "Environmental",
+            reaction: "Sneezing and runny nose",
+            clinicalStatus: "Active",
+            verificationStatus: "Confirmed",
+            criticality: "Low"
+        };
+
+        const UPDATE_ENV_ALLERGY = {
+            substance: "Pollen",
+            criticality: "High"
+        };
+
+        chartPage.environmentalAllergyCRUD(CREATE_ENV_ALLERGY, UPDATE_ENV_ALLERGY);
+    });
+
+    it("Allergy - Biologic", () => {
+        const CREATE_BIO_ALLERGY = {
+            substance: "Insulin",
+            category: "Biologic",
+            reaction: "Local swelling",
+            clinicalStatus: "Active",
+            verificationStatus: "Confirmed",
+            criticality: "High"
+        };
+
+        const UPDATE_BIO_ALLERGY = {
+            substance: "Vaccine",
+            criticality: "Low"
+        };
+
+        chartPage.biologicAllergyCRUD(CREATE_BIO_ALLERGY, UPDATE_BIO_ALLERGY);
+    });
+
     it("Visual Acuity", () => {
         currentOpInfo = { name: "Visual Acuity", status: "PENDING" };
 
@@ -90,62 +164,6 @@ describe("Patient Chart Clinical Operations", () => {
         });
     });
 
-    it("Allergy - Medication", () => {
-        currentOpInfo = { name: "Allergy: Medication", status: "PENDING" };
-
-        cy.get('body').then(($body) => {
-            if ($body.find("#allergies").length > 0 && $body.find("#allergies").is(':visible')) {
-                chartPage.medicationAllergyCRUD();
-                currentOpInfo.status = "PASSED";
-            } else {
-                currentOpInfo.status = "MISSING";
-                cy.log(">>> Allergy section is missing. Skipping...");
-            }
-        });
-    });
-
-    it("Allergy - Food", () => {
-        currentOpInfo = { name: "Allergy: Food", status: "PENDING" };
-
-        cy.get('body').then(($body) => {
-            if ($body.find("#allergies").length > 0 && $body.find("#allergies").is(':visible')) {
-                chartPage.foodAllergyCRUD();
-                currentOpInfo.status = "PASSED";
-            } else {
-                currentOpInfo.status = "MISSING";
-                cy.log(">>> Food Allergy section is missing. Skipping...");
-            }
-        });
-    });
-
-    it("Allergy - Environmental", () => {
-        currentOpInfo = { name: "Allergy: Environmental", status: "PENDING" };
-
-        cy.get('body').then(($body) => {
-            if ($body.find("#allergies").length > 0 && $body.find("#allergies").is(':visible')) {
-                chartPage.environmentalAllergyCRUD();
-                currentOpInfo.status = "PASSED";
-            } else {
-                currentOpInfo.status = "MISSING";
-                cy.log(">>> Environmental Allergy section is missing. Skipping...");
-            }
-        });
-    });
-
-    it("Allergy - Biologic", () => {
-        currentOpInfo = { name: "Allergy: Biologic", status: "PENDING" };
-
-        cy.get('body').then(($body) => {
-            if ($body.find("#allergies").length > 0 && $body.find("#allergies").is(':visible')) {
-                chartPage.biologicAllergyCRUD();
-                currentOpInfo.status = "PASSED";
-            } else {
-                currentOpInfo.status = "MISSING";
-                cy.log(">>> Biologic Allergy section is missing. Skipping...");
-            }
-        });
-    });
-
     it("Vital Measurements", () => {
         currentOpInfo = { name: "Vital Measurements", status: "PENDING" };
 
@@ -174,101 +192,143 @@ describe("Patient Chart Clinical Operations", () => {
         });
     });
 
-    it("Social History", () => {
-        currentOpInfo = { name: "Social History", status: "PENDING" };
-
-        cy.get('body').then(($body) => {
-            if ($body.find("#socialHx").length > 0 && $body.find("#socialHx").is(':visible')) {
-                chartPage.socialHistoryCRUD();
-                currentOpInfo.status = "PASSED";
-            } else {
-                currentOpInfo.status = "MISSING";
-                cy.log(">>> Social History section is missing. Skipping...");
-            }
-        });
-    });
-
     it("Medical History", () => {
-        const INITIAL_DATA = {
-            // Primary Fields
+        const INITIAL_MEDICAL_HX_DATA = {
             diagnosis: "Hyper",
             verification: "Confirmed",
             clinicalStatus: "Active",
-            asserter: "Limon",
-            // Additional Details
             onsetAge: "21",
             onsetComment: "Initial onset noticed during routine check.",
             abatementAge: "25",
             abatementComment: "Remission observed after treatment.",
             severity: "Moderate to severe",
-            bodySite: "Left", // Typing 4 letters to trigger search
-            stage: "St"
+            bodySite: "Articular cartilage",
+            stage: "Stage I",
+            asserter: "Mehedi Hasan"
         };
 
-        const UPDATED_DATA = {
-            diagnosis: "Diabetes",
-            verification: "Confirmed",
+        const UPDATED_MEDICAL_HX_DATA = {
+            diagnosis: "Dia",
+            verification: "Refuted",
             clinicalStatus: "Resolved",
-            asserter: "traideas",
-            onsetAge: "30",
-            onsetComment: "Update: Condition changed.",
-            abatementAge: "40",
-            abatementComment: "Update: Fully recovered.",
             severity: "Mild",
-            bodySite: "Right",
-            stage: "Stage II"
+            onsetAge: "30",
+            abatementAge: "35"
         };
 
-        currentOpInfo = { name: "Medical History (Full Entry)", status: "PENDING" };
+        // // 1. Create
+        chartPage.createMedicalHistory(INITIAL_MEDICAL_HX_DATA);
 
-        cy.get('body').then(($body) => {
-            if ($body.find("#medicalHx").length > 0) {
-                // Step 1: Fill Primary Fields
-                chartPage.fillPrimaryMedicalHistory(INITIAL_DATA);
-                cy.log(">>> Creation verified.");
+        // 2. Update
+        chartPage.updateMedicalHistory(INITIAL_MEDICAL_HX_DATA.diagnosis, UPDATED_MEDICAL_HX_DATA);
 
-                // Step 2: Fill Additional Details (Appended in the same flow)
-                chartPage.fillAdditionalMedicalHistory(INITIAL_DATA);
-                chartPage.updateMedicalHistory(INITIAL_DATA.diagnosis, UPDATED_DATA);
-                cy.log(">>> Update verified.");
-                // Step 3: DELETE
-                chartPage.deleteMedicalHistory(UPDATED_DATA.diagnosis);
-
-                cy.log(">>> Full CRUD lifecycle for Medical History completed.");
-
-
-
-                currentOpInfo.status = "PASSED";
-            }
-        });
-    });
-
-    it("Surgical History", () => {
-        currentOpInfo = { name: "Surgical History", status: "PENDING" };
-
-        cy.get('body').then(($body) => {
-            if ($body.find("#surgicalHx").length > 0 && $body.find("#surgicalHx").is(':visible')) {
-                chartPage.surgicalHistoryCRUD();
-                currentOpInfo.status = "PASSED";
-            } else {
-                currentOpInfo.status = "MISSING";
-                cy.log(">>> Surgical History section is missing. Skipping...");
-            }
-        });
+        // 3. Delete
+        chartPage.deleteMedicalHistory(UPDATED_MEDICAL_HX_DATA.diagnosis);
     });
 
     it("Family History", () => {
-        currentOpInfo = { name: "Family History", status: "PENDING" };
+        const INITIAL_FAMILY_HX_DATA = {
+            diagnosis: "Diabetes",
+            relationship: "Mother",
+            condition: "Gas gangrene",
+            age: "23",
+            comment: "Started with pain",
+            outcome: "Patient condition resolved",
+            note: "Automation note",
+            procedure: "Faradic nerve",
+            procedureAge: "43",
+            procedureComment: "Follow up needed",
+            reason: "Reaction to repetitive",
+            referenceType: "Faradic nerve",
+            relativeName: "Jane Doe",
+            sex: "Female",
+            status: "Completed",
+            dataAbsentReason: "Subject unknown",
+            personalComment: "Born in 1960",
+            note: "General note about relative's medical history"
+        };
 
-        cy.get('body').then(($body) => {
-            if ($body.find("#familyHx").length > 0 && $body.find("#familyHx").is(':visible')) {
-                chartPage.familyHistoryCRUD();
-                currentOpInfo.status = "PASSED";
-            } else {
-                currentOpInfo.status = "MISSING";
-                cy.log(">>> Family History section is missing. Skipping...");
-            }
-        });
+        const UPDATED_FAMILY_HX_DATA = {
+            diagnosis: "Asthma",
+            relationship: "Father",
+            condition: "Gas gangrene",
+            age: "30",
+            comment: "Updated pain level",
+            relativeName: "John Doe",
+            sex: "Male"
+        };
+
+
+        chartPage.createFamilyHistory(INITIAL_FAMILY_HX_DATA);
+        chartPage.updateFamilyHistory(INITIAL_FAMILY_HX_DATA.diagnosis, UPDATED_FAMILY_HX_DATA);
+        chartPage.deleteFamilyHistory(UPDATED_FAMILY_HX_DATA.diagnosis);
+
+    });
+
+    it("Surgical History", () => {
+        const SURGICAL_HX_DATA = {
+            surgeryName: "Appendectomy",
+            surgeryDate: "05/15/2024",
+            profileType: "Surgical (past surgeries)",
+            status: "Entered In Error",
+            category: "Surgical procedure",
+            performedDate: "2024-05-15",
+            outcome: "Successful",
+            location: "General Hospital OR 3",
+            reason: "Appendicitis",
+            bodySite: "Appendix",
+            complication: "Minor bleeding",
+            followUp: "Removal of sutures after 10 days",
+            note: "Patient tolerated the procedure well without issues."
+        };
+
+        const UPDATED_SURGICAL_HX_DATA = {
+            surgeryName: "Glaucoma",
+            status: "In Progress",
+            outcome: "Successful",
+            location: "City Central Clinic OR 2",
+            complication: "None reported",
+            note: "Updated follow-up clinical note."
+        };
+
+        chartPage.createSurgicalHistory(SURGICAL_HX_DATA);
+
+
+        chartPage.updateSurgicalHistory(SURGICAL_HX_DATA.surgeryName, UPDATED_SURGICAL_HX_DATA);
+        chartPage.deleteSurgicalHistory(UPDATED_SURGICAL_HX_DATA.surgeryName);
+
+    })
+
+    it("Social History", () => {
+        const SOCIAL_HX_DATA = {
+            observation: "Tobacco smoking status",
+            startDate: "2024-01-10",
+            endDate: "2024-06-15",
+            note: "Smoked occasionally during social events",
+            bodySite: "Resp",
+            method: "Patient-reported",
+            componentCode: "Cigarettes smoked per day",
+            componentValue: "15",
+            interpretation: "Normal",
+            performerType: "Practitioner",
+            performerPerson: "Mehedi Hasan"
+        };
+
+        const UPDATED_SOCIAL_HX_DATA = {
+            observation: "Alcohol drinking status",
+            note: "Updated social history note",
+            method: "Clinic interview",
+            componentCode: "Alcoholic drinks per day",
+            componentValue: "2"
+        };
+
+        chartPage.createSocialHistory(SOCIAL_HX_DATA);
+
+
+        chartPage.updateSocialHistory(SOCIAL_HX_DATA.observation, UPDATED_SOCIAL_HX_DATA);
+
+        chartPage.deleteSocialHistory(UPDATED_SOCIAL_HX_DATA.observation);
+
     });
 
     it("Administrator Notes", () => {
@@ -326,5 +386,6 @@ describe("Patient Chart Clinical Operations", () => {
             }
         });
     });
+
 
 });

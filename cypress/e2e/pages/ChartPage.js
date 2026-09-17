@@ -230,311 +230,933 @@ class ChartPage {
     this.waitForLoaders();
   }
 
-  // Selectors for Allergies
-  get allergyContainer() { return cy.get("#allergies"); }
-  get addAllergyBtn() { return this.allergyContainer.find(".chart-header button.MuiIconButton-colorPrimary"); }
+  // Selectors for Allergies (New Feature)
+  get allergyHxContainer() { return cy.get("#allergyHx"); }
 
   /**
    * Complete CRUD operation for Medication Allergy
+   * @param {Object} createData - Initial record values
+   * @param {Object} updateData - Updated record values
    */
-  medicationAllergyCRUD() {
-    const idCreate = Math.floor(100 + Math.random() * 900);
-    const idUpdate = Math.floor(100 + Math.random() * 900);
-    const initialName = "Penicillin ID: " + idCreate;
-    const updatedName = "Amoxicillin ID: " + idUpdate;
+  medicationAllergyCRUD(createData, updateData) {
+    // ==========================================
+    // 1. CREATE OPERATION
+    // ==========================================
+    // Open new allergy entry form
+    this.allergyHxContainer
+      .scrollIntoView()
+      .should('be.visible')
+      .find('.chart-header button.MuiIconButton-colorPrimary, button.MuiIconButton-colorPrimary')
+      .last()
+      .click({ force: true });
 
-    // --- CREATE PART ---
-    this.addAllergyBtn.click({ force: true });
-
-    // Handle the "New Allergy" menu if it appears
-    cy.get("body").then(($body) => {
+    // Handle "New Allergy" menu item if it pops up
+    cy.get('body').then(($body) => {
       if ($body.find('li:contains("New Allergy")').length > 0) {
-        cy.contains("li", "New Allergy").click({ force: true });
+        cy.contains('li', /New Allergy/i).click({ force: true });
       }
     });
 
-    this.allergyContainer.find("table tbody tr").first().as('allergyNewRow').within(() => {
-      cy.get("td").eq(0).find("input").type(initialName, { force: true });
-      cy.get("td").eq(1).find(".MuiSelect-select").click({ force: true });
-    });
-    cy.get('li[role="option"]').contains("Medication").click({ force: true });
-
-    cy.get('@allergyNewRow').within(() => {
-      cy.get("td").eq(2).find("input").type("Severe Rash", { force: true });
-      cy.get("td").last().find("button").first().click({ force: true });
-    });
-
-    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("be.visible");
-    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("not.exist");
-
     this.waitForLoaders();
 
-    // --- UPDATE PART ---
-    cy.contains("#allergies tr", idCreate.toString())
-      .scrollIntoView()
-      .as("medRowToUpdate");
+    // 1. Fill Substance (Autocomplete)
+    this.allergyHxContainer
+      .find('table tbody tr', { timeout: 30000 })
+      .first()
+      .find('input[placeholder*="e.g. penicillin, peanuts"]')
+      .first()
+      .should('be.visible')
+      .clear({ force: true })
+      .type(createData.substance, { delay: 200, force: true });
 
-    // Click first cell to enter edit mode
-    cy.get("@medRowToUpdate").find("td").first().click({ force: true });
+    cy.get('li.MuiAutocomplete-option, li.autocomplete-option, li[role="option"]', { timeout: 300000 })
+      .first()
+      .should('be.visible')
+      .click({ force: true });
 
-    cy.get("@medRowToUpdate").within(() => {
-      cy.get("input", { timeout: 120000 }).should("be.visible");
-      cy.get("td").eq(0).find("input").first().clear({ force: true }).type(updatedName, { force: true });
-      cy.get("td").eq(2).find("input").first().clear({ force: true }).type("Urticaria", { force: true });
-      cy.get("td").last().find("button").first().click({ force: true });
-    });
+    // 2. Select Category (Dropdown)
+    this.allergyHxContainer
+      .find('table tbody tr')
+      .first()
+      .contains('div, span', /Select category/i)
+      .closest('[role="combobox"], .MuiSelect-select')
+      .click({ force: true });
 
-    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("be.visible");
-    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("not.exist");
-    this.waitForLoaders();
+    cy.get('li[role="option"]', { timeout: 10000 })
+      .contains(createData.category || "Medication")
+      .should('be.visible')
+      .click({ force: true });
 
-    // --- DELETE PART ---
-    cy.contains("#allergies tr", idUpdate.toString())
-      .scrollIntoView()
-      .as("medRowToDelete");
+    // 3. Fill Header Reaction
+    if (createData.reaction) {
+      this.allergyHxContainer
+        .find('table tbody tr')
+        .first()
+        .find('input[placeholder*="e.g. hives, rash"]')
+        .first()
+        .clear({ force: true })
+        .type(createData.reaction, { force: true });
+    }
 
-    cy.get("@medRowToDelete").find("td").first().click({ force: true });
+    // 4. Expand Additional Details
+    this.allergyHxContainer
+      .contains('button', /Show additional details/i)
+      .should('be.visible')
+      .click({ force: true });
 
-    cy.get("@medRowToDelete").within(() => {
-      cy.get("input", { timeout: 120000 }).should("be.visible");
-      // Targeting the red delete button specifically
-      cy.get('button[aria-label="Delete"], button[aria-label="delete"]')
-        .filter(".MuiIconButton-colorError")
-        .should("be.visible")
+    this.allergyHxContainer.contains('button', /Hide additional details/i, { timeout: 30000 }).should('be.visible');
+
+    // 5. Select Clinical status (Dropdown)
+    if (createData.clinicalStatus) {
+      this.allergyHxContainer
+        .find('table tbody tr')
+        .contains('p', /^Clinical status$/i)
+        .parent()
+        .find('[role="combobox"], .MuiSelect-select')
+        .scrollIntoView()
         .click({ force: true });
-    });
 
-    cy.contains("button", "Yes, delete it!").click({ force: true });
-    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("be.visible");
-    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("not.exist");
+      cy.get('li[role="option"]', { timeout: 10000 })
+        .contains(createData.clinicalStatus)
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 6. Select Verification status (Dropdown)
+    if (createData.verificationStatus) {
+      this.allergyHxContainer
+        .find('table tbody tr')
+        .contains('p', /^Verification status$/i)
+        .parent()
+        .find('[role="combobox"], .MuiSelect-select')
+        .scrollIntoView()
+        .click({ force: true });
+
+      cy.get('li[role="option"]', { timeout: 10000 })
+        .contains(createData.verificationStatus)
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 7. Select Criticality (Dropdown)
+    if (createData.criticality) {
+      this.allergyHxContainer
+        .find('table tbody tr')
+        .contains('p', /^Criticality$/i)
+        .parent()
+        .find('[role="combobox"], .MuiSelect-select')
+        .scrollIntoView()
+        .click({ force: true });
+
+      cy.get('li[role="option"]', { timeout: 10000 })
+        .contains(createData.criticality)
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 8. Save Record (Click Blue Tick Button)
+    this.allergyHxContainer
+      .contains('button', /Hide additional details/i)
+      .parent()
+      .find('button.MuiIconButton-colorPrimary')
+      .should('be.visible')
+      .click({ force: true });
+
     this.waitForLoaders();
+
+    // 9. Verify Toast Message
+    cy.contains(/created.*successfully/i, { timeout: 60000 }).should('be.visible');
+    cy.contains(/created.*successfully/i, { timeout: 60000 }).should('not.exist');
+    this.waitForLoaders();
+
+
+
+    // ==========================================
+    // 2. UPDATE OPERATION
+    // ==========================================
+    // Open edit mode by clicking the title text directly
+    this.allergyHxContainer
+      .find('.MuiAccordionSummary-root', { timeout: 60000 })
+      .first()
+      .find('div[class*="MuiTypography-body1"], div[aria-label*="' + createData.substance + '"]')
+      .first()
+      .scrollIntoView()
+      .should('be.visible')
+      .click({ force: true });
+
+    this.waitForLoaders();
+
+    // Update Substance Name (Autocomplete)
+    if (updateData.substance) {
+      this.allergyHxContainer
+        .find('table tbody tr')
+        .first()
+        .find('input[placeholder*="e.g. penicillin, peanuts"]')
+        .first()
+        .should('be.visible')
+        .clear({ force: true })
+        .type(updateData.substance, { delay: 200, force: true });
+
+      cy.get('li.MuiAutocomplete-option, li.autocomplete-option, li[role="option"]', { timeout: 300000 })
+        .first()
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // Update Criticality
+    if (updateData.criticality) {
+      this.allergyHxContainer
+        .find('table tbody tr')
+        .contains('p', /^Criticality$/i)
+        .parent()
+        .find('[role="combobox"], .MuiSelect-select')
+        .scrollIntoView()
+        .click({ force: true });
+
+      cy.get('li[role="option"]', { timeout: 10000 })
+        .contains(updateData.criticality)
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // Save Updated Record (Click Blue Tick Button)
+    this.allergyHxContainer
+      .contains('button', /Hide additional details/i)
+      .parent()
+      .find('button.MuiIconButton-colorPrimary')
+      .should('be.visible')
+      .click({ force: true });
+
+    this.waitForLoaders();
+
+    // Verify Update Toast Message
+    cy.contains(/updated.*successfully/i, { timeout: 60000 }).should('be.visible');
+    cy.contains(/updated.*successfully/i, { timeout: 60000 }).should('not.exist');
+    this.waitForLoaders();
+
+
+    // ==========================================
+    // 3. DELETE OPERATION
+    // ==========================================
+    // Target latest card and click red delete button
+    this.allergyHxContainer
+      .find('.MuiAccordion-root', { timeout: 60000 })
+      // .filter(`:contains("${targetSubstance}")`)
+      .first()
+      .scrollIntoView()
+      .should('be.visible')
+      .find('button.MuiIconButton-colorError')
+      .should('be.visible')
+      .click({ force: true });
+
+    // Confirm Deletion in SweetAlert Modal
+    cy.get('.swal2-popup', { timeout: 30000 })
+      .should('be.visible')
+      .within(() => {
+        cy.contains(/Are you sure\?/i).should('be.visible');
+        cy.contains(/You won't be able to revert this!/i).should('be.visible');
+        cy.contains('button', 'Yes, delete it!')
+          .should('be.visible')
+          .click({ force: true });
+      });
+
+    this.waitForLoaders();
+
+    // Verify Delete Toast Message
+    cy.contains(/deleted.*successfully/i, { timeout: 60000 }).should('be.visible');
+    cy.contains(/deleted.*successfully/i, { timeout: 60000 }).should('not.exist');
+    this.waitForLoaders();
+    cy.log("✅ Medication Allergy CRUD Completed");
   }
 
   /**
    * Complete CRUD operation for Food Allergy
+   * @param {Object} createData - Initial record values
+   * @param {Object} updateData - Updated record values
    */
-  foodAllergyCRUD() {
-    const idCreate = Math.floor(100 + Math.random() * 900);
-    const idUpdate = Math.floor(100 + Math.random() * 900);
-    const initialName = "Peanuts ID: " + idCreate;
-    const updatedName = "Shellfish ID: " + idUpdate;
+  foodAllergyCRUD(createData, updateData) {
+    // ==========================================
+    // 1. CREATE OPERATION
+    // ==========================================
+    this.allergyHxContainer
+      .scrollIntoView()
+      .should('be.visible')
+      .find('.chart-header button.MuiIconButton-colorPrimary, button.MuiIconButton-colorPrimary')
+      .last()
+      .click({ force: true });
 
-    // --- CREATE PART ---
-    this.addAllergyBtn.click({ force: true });
-
-    // Handle "New Allergy" menu if it appears
-    cy.get("body").then(($body) => {
+    // Handle "New Allergy" menu item if it pops up
+    cy.get('body').then(($body) => {
       if ($body.find('li:contains("New Allergy")').length > 0) {
-        cy.contains("li", "New Allergy").click({ force: true });
+        cy.contains('li', /New Allergy/i).click({ force: true });
       }
     });
 
-    this.allergyContainer.find("table tbody tr").first().as('foodNewRow').within(() => {
-      cy.get("td").eq(0).find("input").type(initialName, { force: true });
-      cy.get("td").eq(1).find(".MuiSelect-select").click({ force: true });
-    });
-
-    // Selecting Food category
-    cy.get('li[role="option"]').contains("Food").click({ force: true });
-
-    cy.get('@foodNewRow').within(() => {
-      cy.get("td").eq(2).find("input").type("Hives", { force: true });
-      cy.get("td").last().find("button").first().click({ force: true });
-    });
-
-    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("be.visible");
-    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
 
-    // --- UPDATE PART ---
-    cy.contains("#allergies tr", idCreate.toString())
-      .scrollIntoView()
-      .as("foodRowToUpdate");
+    // 1. Fill Substance (Autocomplete)
+    this.allergyHxContainer
+      .find('table tbody tr', { timeout: 30000 })
+      .first()
+      .find('input[placeholder*="e.g. penicillin, peanuts"]')
+      .first()
+      .should('be.visible')
+      .clear({ force: true })
+      .type(createData.substance, { delay: 200, force: true });
 
-    cy.get("@foodRowToUpdate").find("td").first().click({ force: true });
+    cy.get('li.MuiAutocomplete-option, li.autocomplete-option, li[role="option"]', { timeout: 300000 })
+      .first()
+      .should('be.visible')
+      .click({ force: true });
 
-    cy.get("@foodRowToUpdate").within(() => {
-      cy.get("input", { timeout: 120000 }).should("be.visible");
-      cy.get("td").eq(0).find("input").first().clear({ force: true }).type(updatedName, { force: true });
-      cy.get("td").last().find("button").first().click({ force: true });
-    });
+    // 2. Select Category (Dropdown)
+    this.allergyHxContainer
+      .find('table tbody tr')
+      .first()
+      .contains('div, span', /Select category/i)
+      .closest('[role="combobox"], .MuiSelect-select')
+      .click({ force: true });
 
-    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("be.visible");
-    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("not.exist");
-    this.waitForLoaders();
+    cy.get('li[role="option"]', { timeout: 10000 })
+      .contains(createData.category || "Food")
+      .should('be.visible')
+      .click({ force: true });
 
-    // --- DELETE PART ---
-    cy.contains("#allergies tr", idUpdate.toString())
-      .scrollIntoView()
-      .as("foodRowToDelete");
+    // 3. Fill Header Reaction
+    if (createData.reaction) {
+      this.allergyHxContainer
+        .find('table tbody tr')
+        .first()
+        .find('input[placeholder*="e.g. hives, rash"]')
+        .first()
+        .clear({ force: true })
+        .type(createData.reaction, { force: true });
+    }
 
-    cy.get("@foodRowToDelete").find("td").first().click({ force: true });
+    // 4. Expand Additional Details
+    this.allergyHxContainer
+      .contains('button', /Show additional details/i)
+      .should('be.visible')
+      .click({ force: true });
 
-    cy.get("@foodRowToDelete").within(() => {
-      cy.get("input", { timeout: 120000 }).should("be.visible");
-      cy.get('button[aria-label="Delete"], button[aria-label="delete"]')
-        .filter(".MuiIconButton-colorError")
-        .should("be.visible")
+    this.allergyHxContainer.contains('button', /Hide additional details/i, { timeout: 30000 }).should('be.visible');
+
+    // 5. Select Clinical status (Dropdown)
+    if (createData.clinicalStatus) {
+      this.allergyHxContainer
+        .find('table tbody tr')
+        .contains('p', /^Clinical status$/i)
+        .parent()
+        .find('[role="combobox"], .MuiSelect-select')
+        .scrollIntoView()
         .click({ force: true });
-    });
 
-    cy.contains("button", "Yes, delete it!").click({ force: true });
-    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("be.visible");
-    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("not.exist");
+      cy.get('li[role="option"]', { timeout: 10000 })
+        .contains(createData.clinicalStatus)
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 6. Select Verification status (Dropdown)
+    if (createData.verificationStatus) {
+      this.allergyHxContainer
+        .find('table tbody tr')
+        .contains('p', /^Verification status$/i)
+        .parent()
+        .find('[role="combobox"], .MuiSelect-select')
+        .scrollIntoView()
+        .click({ force: true });
+
+      cy.get('li[role="option"]', { timeout: 10000 })
+        .contains(createData.verificationStatus)
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 7. Select Criticality (Dropdown)
+    if (createData.criticality) {
+      this.allergyHxContainer
+        .find('table tbody tr')
+        .contains('p', /^Criticality$/i)
+        .parent()
+        .find('[role="combobox"], .MuiSelect-select')
+        .scrollIntoView()
+        .click({ force: true });
+
+      cy.get('li[role="option"]', { timeout: 10000 })
+        .contains(createData.criticality)
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 8. Save Record (Click Blue Tick Button)
+    this.allergyHxContainer
+      .contains('button', /Hide additional details/i)
+      .parent()
+      .find('button.MuiIconButton-colorPrimary')
+      .should('be.visible')
+      .click({ force: true });
+
     this.waitForLoaders();
-  }
 
-  // Selectors for Social History
-  get socialHxContainer() { return cy.get("#socialHx"); }
-  get addSocialBtn() { return this.socialHxContainer.find(".chart-header button.MuiIconButton-colorPrimary"); }
+    // 9. Verify Toast Message
+    cy.contains(/created.*successfully/i, { timeout: 60000 }).should('be.visible');
+    cy.contains(/created.*successfully/i, { timeout: 60000 }).should('not.exist');
+    this.waitForLoaders();
+
+    // ==========================================
+    // 2. UPDATE OPERATION
+    // ==========================================
+    // Open edit mode by clicking the title text directly
+    this.allergyHxContainer
+      .find('.MuiAccordionSummary-root', { timeout: 60000 })
+      .first()
+      .find('div[class*="MuiTypography-body1"], div[aria-label*="' + createData.substance + '"]')
+      .first()
+      .scrollIntoView()
+      .should('be.visible')
+      .click({ force: true });
+
+    this.waitForLoaders();
+
+    // Update Substance Name (Autocomplete)
+    if (updateData.substance) {
+      this.allergyHxContainer
+        .find('table tbody tr')
+        .first()
+        .find('input[placeholder*="e.g. penicillin, peanuts"]')
+        .first()
+        .should('be.visible')
+        .clear({ force: true })
+        .type(updateData.substance, { delay: 200, force: true });
+
+      cy.get('li.MuiAutocomplete-option, li.autocomplete-option, li[role="option"]', { timeout: 300000 })
+        .first()
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // Update Criticality
+    if (updateData.criticality) {
+      this.allergyHxContainer
+        .find('table tbody tr')
+        .contains('p', /^Criticality$/i)
+        .parent()
+        .find('[role="combobox"], .MuiSelect-select')
+        .scrollIntoView()
+        .click({ force: true });
+
+      cy.get('li[role="option"]', { timeout: 10000 })
+        .contains(updateData.criticality)
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // Save Updated Record (Click Blue Tick Button)
+    this.allergyHxContainer
+      .contains('button', /Hide additional details/i)
+      .parent()
+      .find('button.MuiIconButton-colorPrimary')
+      .should('be.visible')
+      .click({ force: true });
+
+    this.waitForLoaders();
+
+    // Verify Update Toast Message
+    cy.contains(/updated.*successfully/i, { timeout: 60000 }).should('be.visible');
+    cy.contains(/updated.*successfully/i, { timeout: 60000 }).should('not.exist');
+    this.waitForLoaders();
+
+    // ==========================================
+    // 3. DELETE OPERATION
+    // ==========================================
+    this.allergyHxContainer
+      .find('.MuiAccordion-root', { timeout: 60000 })
+      .first()
+      .scrollIntoView()
+      .should('be.visible')
+      .find('button.MuiIconButton-colorError')
+      .should('be.visible')
+      .click({ force: true });
+
+    // Confirm Deletion in SweetAlert Modal
+    cy.get('.swal2-popup', { timeout: 30000 })
+      .should('be.visible')
+      .within(() => {
+        cy.contains(/Are you sure\?/i).should('be.visible');
+        cy.contains(/You won't be able to revert this!/i).should('be.visible');
+        cy.contains('button', 'Yes, delete it!')
+          .should('be.visible')
+          .click({ force: true });
+      });
+
+    this.waitForLoaders();
+
+    // Verify Delete Toast Message
+    cy.contains(/deleted.*successfully/i, { timeout: 60000 }).should('be.visible');
+    cy.contains(/deleted.*successfully/i, { timeout: 60000 }).should('not.exist');
+    this.waitForLoaders();
+    cy.log("✅ Food Allergy CRUD Completed");
+  }
 
   /**
    * Complete CRUD operation for Environmental Allergy
+   * @param {Object} createData - Initial record values
+   * @param {Object} updateData - Updated record values
    */
-  environmentalAllergyCRUD() {
-    const idCreate = Math.floor(100 + Math.random() * 900);
-    const idUpdate = Math.floor(100 + Math.random() * 900);
-    const initialName = "Dust Mites ID: " + idCreate;
-    const updatedName = "Pollen ID: " + idUpdate;
+  environmentalAllergyCRUD(createData, updateData) {
+    // ==========================================
+    // 1. CREATE OPERATION
+    // ==========================================
+    this.allergyHxContainer
+      .scrollIntoView()
+      .should('be.visible')
+      .find('.chart-header button.MuiIconButton-colorPrimary, button.MuiIconButton-colorPrimary')
+      .last()
+      .click({ force: true });
 
-    // --- CREATE PART ---
-    this.addAllergyBtn.click({ force: true });
-
-    // Handle "New Allergy" menu if it appears
-    cy.get("body").then(($body) => {
+    // Handle "New Allergy" menu item if it pops up
+    cy.get('body').then(($body) => {
       if ($body.find('li:contains("New Allergy")').length > 0) {
-        cy.contains("li", "New Allergy").click({ force: true });
+        cy.contains('li', /New Allergy/i).click({ force: true });
       }
     });
 
-    this.allergyContainer.find("table tbody tr").first().as('envNewRow').within(() => {
-      cy.get("td").eq(0).find("input").type(initialName, { force: true });
-      cy.get("td").eq(1).find(".MuiSelect-select").click({ force: true });
-    });
-
-    // Selecting Environmental category
-    cy.get('li[role="option"]').contains("Environmental").click({ force: true });
-
-    cy.get('@envNewRow').within(() => {
-      cy.get("td").eq(2).find("input").type("Sneezing", { force: true });
-      cy.get("td").last().find("button").first().click({ force: true });
-    });
-
-    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("be.visible");
-    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
 
-    // --- UPDATE PART ---
-    cy.contains("#allergies tr", idCreate.toString())
-      .scrollIntoView()
-      .as("envRowToUpdate");
+    // 1. Fill Substance (Autocomplete)
+    this.allergyHxContainer
+      .find('table tbody tr', { timeout: 30000 })
+      .first()
+      .find('input[placeholder*="e.g. penicillin, peanuts"]')
+      .first()
+      .should('be.visible')
+      .clear({ force: true })
+      .type(createData.substance, { delay: 200, force: true });
 
-    cy.get("@envRowToUpdate").find("td").first().click({ force: true });
+    cy.get('li.MuiAutocomplete-option, li.autocomplete-option, li[role="option"]', { timeout: 300000 })
+      .first()
+      .should('be.visible')
+      .click({ force: true });
 
-    cy.get("@envRowToUpdate").within(() => {
-      cy.get("input", { timeout: 120000 }).should("be.visible");
-      cy.get("td").eq(0).find("input").first().clear({ force: true }).type(updatedName, { force: true });
-      cy.get("td").last().find("button").first().click({ force: true });
-    });
+    // 2. Select Category (Dropdown)
+    this.allergyHxContainer
+      .find('table tbody tr')
+      .first()
+      .contains('div, span', /Select category/i)
+      .closest('[role="combobox"], .MuiSelect-select')
+      .click({ force: true });
 
-    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("be.visible");
-    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("not.exist");
-    this.waitForLoaders();
+    cy.get('li[role="option"]', { timeout: 10000 })
+      .contains(createData.category || "Environmental")
+      .should('be.visible')
+      .click({ force: true });
 
-    // --- DELETE PART ---
-    cy.contains("#allergies tr", idUpdate.toString())
-      .scrollIntoView()
-      .as("envRowToDelete");
+    // 3. Fill Header Reaction
+    if (createData.reaction) {
+      this.allergyHxContainer
+        .find('table tbody tr')
+        .first()
+        .find('input[placeholder*="e.g. hives, rash"]')
+        .first()
+        .clear({ force: true })
+        .type(createData.reaction, { force: true });
+    }
 
-    cy.get("@envRowToDelete").find("td").first().click({ force: true });
+    // 4. Expand Additional Details
+    this.allergyHxContainer
+      .contains('button', /Show additional details/i)
+      .should('be.visible')
+      .click({ force: true });
 
-    cy.get("@envRowToDelete").within(() => {
-      cy.get("input", { timeout: 120000 }).should("be.visible");
-      cy.get('button[aria-label="Delete"], button[aria-label="delete"]')
-        .filter(".MuiIconButton-colorError")
-        .should("be.visible")
+    this.allergyHxContainer.contains('button', /Hide additional details/i, { timeout: 30000 }).should('be.visible');
+
+    // 5. Select Clinical status (Dropdown)
+    if (createData.clinicalStatus) {
+      this.allergyHxContainer
+        .find('table tbody tr')
+        .contains('p', /^Clinical status$/i)
+        .parent()
+        .find('[role="combobox"], .MuiSelect-select')
+        .scrollIntoView()
         .click({ force: true });
-    });
 
-    cy.contains("button", "Yes, delete it!").click({ force: true });
-    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("be.visible");
-    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("not.exist");
+      cy.get('li[role="option"]', { timeout: 10000 })
+        .contains(createData.clinicalStatus)
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 6. Select Verification status (Dropdown)
+    if (createData.verificationStatus) {
+      this.allergyHxContainer
+        .find('table tbody tr')
+        .contains('p', /^Verification status$/i)
+        .parent()
+        .find('[role="combobox"], .MuiSelect-select')
+        .scrollIntoView()
+        .click({ force: true });
+
+      cy.get('li[role="option"]', { timeout: 10000 })
+        .contains(createData.verificationStatus)
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 7. Select Criticality (Dropdown)
+    if (createData.criticality) {
+      this.allergyHxContainer
+        .find('table tbody tr')
+        .contains('p', /^Criticality$/i)
+        .parent()
+        .find('[role="combobox"], .MuiSelect-select')
+        .scrollIntoView()
+        .click({ force: true });
+
+      cy.get('li[role="option"]', { timeout: 10000 })
+        .contains(createData.criticality)
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 8. Save Record (Click Blue Tick Button)
+    this.allergyHxContainer
+      .contains('button', /Hide additional details/i)
+      .parent()
+      .find('button.MuiIconButton-colorPrimary')
+      .should('be.visible')
+      .click({ force: true });
+
     this.waitForLoaders();
+
+    // 9. Verify Toast Message
+    cy.contains(/created.*successfully/i, { timeout: 60000 }).should('be.visible');
+    cy.contains(/created.*successfully/i, { timeout: 60000 }).should('not.exist');
+    this.waitForLoaders();
+
+    // ==========================================
+    // 2. UPDATE OPERATION
+    // ==========================================
+    // Open edit mode by clicking the title text directly
+    this.allergyHxContainer
+      .find('.MuiAccordionSummary-root', { timeout: 60000 })
+      .first()
+      .find('div[class*="MuiTypography-body1"], div[aria-label*="' + createData.substance + '"]')
+      .first()
+      .scrollIntoView()
+      .should('be.visible')
+      .click({ force: true });
+
+    this.waitForLoaders();
+
+    // Update Substance Name (Autocomplete)
+    if (updateData.substance) {
+      this.allergyHxContainer
+        .find('table tbody tr')
+        .first()
+        .find('input[placeholder*="e.g. penicillin, peanuts"]')
+        .first()
+        .should('be.visible')
+        .clear({ force: true })
+        .type(updateData.substance, { delay: 200, force: true });
+
+      cy.get('li.MuiAutocomplete-option, li.autocomplete-option, li[role="option"]', { timeout: 300000 })
+        .first()
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // Update Criticality
+    if (updateData.criticality) {
+      this.allergyHxContainer
+        .find('table tbody tr')
+        .contains('p', /^Criticality$/i)
+        .parent()
+        .find('[role="combobox"], .MuiSelect-select')
+        .scrollIntoView()
+        .click({ force: true });
+
+      cy.get('li[role="option"]', { timeout: 10000 })
+        .contains(updateData.criticality)
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // Save Updated Record (Click Blue Tick Button)
+    this.allergyHxContainer
+      .contains('button', /Hide additional details/i)
+      .parent()
+      .find('button.MuiIconButton-colorPrimary')
+      .should('be.visible')
+      .click({ force: true });
+
+    this.waitForLoaders();
+
+    // Verify Update Toast Message
+    cy.contains(/updated.*successfully/i, { timeout: 60000 }).should('be.visible');
+    cy.contains(/updated.*successfully/i, { timeout: 60000 }).should('not.exist');
+    this.waitForLoaders();
+
+    // ==========================================
+    // 3. DELETE OPERATION
+    // ==========================================
+    this.allergyHxContainer
+      .find('.MuiAccordion-root', { timeout: 60000 })
+      .first()
+      .scrollIntoView()
+      .should('be.visible')
+      .find('button.MuiIconButton-colorError')
+      .should('be.visible')
+      .click({ force: true });
+
+    // Confirm Deletion in SweetAlert Modal
+    cy.get('.swal2-popup', { timeout: 30000 })
+      .should('be.visible')
+      .within(() => {
+        cy.contains(/Are you sure\?/i).should('be.visible');
+        cy.contains(/You won't be able to revert this!/i).should('be.visible');
+        cy.contains('button', 'Yes, delete it!')
+          .should('be.visible')
+          .click({ force: true });
+      });
+
+    this.waitForLoaders();
+
+    // Verify Delete Toast Message
+    cy.contains(/deleted.*successfully/i, { timeout: 60000 }).should('be.visible');
+    cy.contains(/deleted.*successfully/i, { timeout: 60000 }).should('not.exist');
+    this.waitForLoaders();
+    cy.log("✅ Environmental Allergy CRUD Completed");
   }
 
   /**
    * Complete CRUD operation for Biologic Allergy
+   * @param {Object} createData - Initial record values
+   * @param {Object} updateData - Updated record values
    */
-  biologicAllergyCRUD() {
-    const idCreate = Math.floor(100 + Math.random() * 900);
-    const idUpdate = Math.floor(100 + Math.random() * 900);
-    const initialName = "Insulin ID: " + idCreate;
-    const updatedName = "Vaccines ID: " + idUpdate;
+  biologicAllergyCRUD(createData, updateData) {
+    // ==========================================
+    // 1. CREATE OPERATION
+    // ==========================================
+    this.allergyHxContainer
+      .scrollIntoView()
+      .should('be.visible')
+      .find('.chart-header button.MuiIconButton-colorPrimary, button.MuiIconButton-colorPrimary')
+      .last()
+      .click({ force: true });
 
-    // --- CREATE PART ---
-    this.addAllergyBtn.click({ force: true });
-
-    // Handle "New Allergy" context menu if present
-    cy.get("body").then(($body) => {
+    // Handle "New Allergy" menu item if it pops up
+    cy.get('body').then(($body) => {
       if ($body.find('li:contains("New Allergy")').length > 0) {
-        cy.contains("li", "New Allergy").click({ force: true });
+        cy.contains('li', /New Allergy/i).click({ force: true });
       }
     });
 
-    this.allergyContainer.find("table tbody tr").first().as('bioNewRow').within(() => {
-      cy.get("td").eq(0).find("input").type(initialName, { force: true });
-      cy.get("td").eq(1).find(".MuiSelect-select").click({ force: true });
-    });
-
-    // Selecting Biologic category from dropdown
-    cy.get('li[role="option"]').contains("Biologic").click({ force: true });
-
-    cy.get('@bioNewRow').within(() => {
-      cy.get("td").eq(2).find("input").type("Swelling", { force: true });
-      cy.get("td").last().find("button").first().click({ force: true });
-    });
-
-    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("be.visible");
-    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
 
-    // --- UPDATE PART ---
-    cy.contains("#allergies tr", idCreate.toString())
-      .scrollIntoView()
-      .as("bioRowToUpdate");
+    // 1. Fill Substance (Autocomplete)
+    this.allergyHxContainer
+      .find('table tbody tr', { timeout: 30000 })
+      .first()
+      .find('input[placeholder*="e.g. penicillin, peanuts"]')
+      .first()
+      .should('be.visible')
+      .clear({ force: true })
+      .type(createData.substance, { delay: 200, force: true });
 
-    cy.get("@bioRowToUpdate").find("td").first().click({ force: true });
+    cy.get('li.MuiAutocomplete-option, li.autocomplete-option, li[role="option"]', { timeout: 300000 })
+      .first()
+      .should('be.visible')
+      .click({ force: true });
 
-    cy.get("@bioRowToUpdate").within(() => {
-      cy.get("input", { timeout: 120000 }).should("be.visible");
-      cy.get("td").eq(0).find("input").first().clear({ force: true }).type(updatedName, { force: true });
-      cy.get("td").last().find("button").first().click({ force: true });
-    });
+    // 2. Select Category (Dropdown)
+    this.allergyHxContainer
+      .find('table tbody tr')
+      .first()
+      .contains('div, span', /Select category/i)
+      .closest('[role="combobox"], .MuiSelect-select')
+      .click({ force: true });
 
-    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("be.visible");
-    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("not.exist");
-    this.waitForLoaders();
+    cy.get('li[role="option"]', { timeout: 10000 })
+      .contains(createData.category || "Biologic")
+      .should('be.visible')
+      .click({ force: true });
 
-    // --- DELETE PART ---
-    cy.contains("#allergies tr", idUpdate.toString())
-      .scrollIntoView()
-      .as("bioRowToDelete");
+    // 3. Fill Header Reaction
+    if (createData.reaction) {
+      this.allergyHxContainer
+        .find('table tbody tr')
+        .first()
+        .find('input[placeholder*="e.g. hives, rash"]')
+        .first()
+        .clear({ force: true })
+        .type(createData.reaction, { force: true });
+    }
 
-    cy.get("@bioRowToDelete").find("td").first().click({ force: true });
+    // 4. Expand Additional Details
+    this.allergyHxContainer
+      .contains('button', /Show additional details/i)
+      .should('be.visible')
+      .click({ force: true });
 
-    cy.get("@bioRowToDelete").within(() => {
-      cy.get("input", { timeout: 120000 }).should("be.visible");
-      // Target red icon for deletion
-      cy.get('button[aria-label="Delete"], button[aria-label="delete"]')
-        .filter(".MuiIconButton-colorError")
-        .should("be.visible")
+    this.allergyHxContainer.contains('button', /Hide additional details/i, { timeout: 30000 }).should('be.visible');
+
+    // 5. Select Clinical status (Dropdown)
+    if (createData.clinicalStatus) {
+      this.allergyHxContainer
+        .find('table tbody tr')
+        .contains('p', /^Clinical status$/i)
+        .parent()
+        .find('[role="combobox"], .MuiSelect-select')
+        .scrollIntoView()
         .click({ force: true });
-    });
 
-    cy.contains("button", "Yes, delete it!").click({ force: true });
-    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("be.visible");
-    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("not.exist");
+      cy.get('li[role="option"]', { timeout: 10000 })
+        .contains(createData.clinicalStatus)
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 6. Select Verification status (Dropdown)
+    if (createData.verificationStatus) {
+      this.allergyHxContainer
+        .find('table tbody tr')
+        .contains('p', /^Verification status$/i)
+        .parent()
+        .find('[role="combobox"], .MuiSelect-select')
+        .scrollIntoView()
+        .click({ force: true });
+
+      cy.get('li[role="option"]', { timeout: 10000 })
+        .contains(createData.verificationStatus)
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 7. Select Criticality (Dropdown)
+    if (createData.criticality) {
+      this.allergyHxContainer
+        .find('table tbody tr')
+        .contains('p', /^Criticality$/i)
+        .parent()
+        .find('[role="combobox"], .MuiSelect-select')
+        .scrollIntoView()
+        .click({ force: true });
+
+      cy.get('li[role="option"]', { timeout: 10000 })
+        .contains(createData.criticality)
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 8. Save Record (Click Blue Tick Button)
+    this.allergyHxContainer
+      .contains('button', /Hide additional details/i)
+      .parent()
+      .find('button.MuiIconButton-colorPrimary')
+      .should('be.visible')
+      .click({ force: true });
+
     this.waitForLoaders();
+
+    // 9. Verify Toast Message
+    cy.contains(/created.*successfully/i, { timeout: 60000 }).should('be.visible');
+    cy.contains(/created.*successfully/i, { timeout: 60000 }).should('not.exist');
+    this.waitForLoaders();
+
+    // ==========================================
+    // 2. UPDATE OPERATION
+    // ==========================================
+    // Open edit mode by clicking the title text directly
+    this.allergyHxContainer
+      .find('.MuiAccordionSummary-root', { timeout: 60000 })
+      .first()
+      .find('div[class*="MuiTypography-body1"], div[aria-label*="' + createData.substance + '"]')
+      .first()
+      .scrollIntoView()
+      .should('be.visible')
+      .click({ force: true });
+
+    this.waitForLoaders();
+
+    // Update Substance Name (Autocomplete)
+    if (updateData.substance) {
+      this.allergyHxContainer
+        .find('table tbody tr')
+        .first()
+        .find('input[placeholder*="e.g. penicillin, peanuts"]')
+        .first()
+        .should('be.visible')
+        .clear({ force: true })
+        .type(updateData.substance, { delay: 200, force: true });
+
+      cy.get('li.MuiAutocomplete-option, li.autocomplete-option, li[role="option"]', { timeout: 300000 })
+        .first()
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // Update Criticality
+    if (updateData.criticality) {
+      this.allergyHxContainer
+        .find('table tbody tr')
+        .contains('p', /^Criticality$/i)
+        .parent()
+        .find('[role="combobox"], .MuiSelect-select')
+        .scrollIntoView()
+        .click({ force: true });
+
+      cy.get('li[role="option"]', { timeout: 10000 })
+        .contains(updateData.criticality)
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // Save Updated Record (Click Blue Tick Button)
+    this.allergyHxContainer
+      .contains('button', /Hide additional details/i)
+      .parent()
+      .find('button.MuiIconButton-colorPrimary')
+      .should('be.visible')
+      .click({ force: true });
+
+    this.waitForLoaders();
+
+    // Verify Update Toast Message
+    cy.contains(/updated.*successfully/i, { timeout: 60000 }).should('be.visible');
+    cy.contains(/updated.*successfully/i, { timeout: 60000 }).should('not.exist');
+    this.waitForLoaders();
+
+    // ==========================================
+    // 3. DELETE OPERATION
+    // ==========================================
+    this.allergyHxContainer
+      .find('.MuiAccordion-root', { timeout: 60000 })
+      .first()
+      .scrollIntoView()
+      .should('be.visible')
+      .find('button.MuiIconButton-colorError')
+      .should('be.visible')
+      .click({ force: true });
+
+    // Confirm Deletion in SweetAlert Modal
+    cy.get('.swal2-popup', { timeout: 30000 })
+      .should('be.visible')
+      .within(() => {
+        cy.contains(/Are you sure\?/i).should('be.visible');
+        cy.contains(/You won't be able to revert this!/i).should('be.visible');
+        cy.contains('button', 'Yes, delete it!')
+          .should('be.visible')
+          .click({ force: true });
+      });
+
+    this.waitForLoaders();
+
+    // Verify Delete Toast Message
+    cy.contains(/deleted.*successfully/i, { timeout: 60000 }).should('be.visible');
+    cy.contains(/deleted.*successfully/i, { timeout: 60000 }).should('not.exist');
+    this.waitForLoaders();
+    cy.log("✅ Biologic Allergy CRUD Completed");
   }
 
   // Selectors for Vital Measurements
@@ -691,137 +1313,183 @@ class ChartPage {
 
 
 
-  // Selectors for the new Medical History (New Feature)
+  // Selectors for Medical History (New Feature)
   get medicalHxContainer() { return cy.get("#medicalHx"); }
-  get addNewMedicalHxBtn() { return this.medicalHxContainer.find("button.MuiIconButton-colorPrimary").last(); }
 
   /**
-   * Part 1: Fills the primary fields of Medical History
-   * @param {Object} data - Contains diagnosis, verification, clinical, and asserter info
+   * Create Medical History record
+   * @param {Object} data - Contains diagnosis, verification, clinicalStatus, onsetAge, etc.
    */
-  fillPrimaryMedicalHistory(data) {
-    // 1. Open new row for entry
-    this.addNewMedicalHxBtn.click({ force: true });
+  createMedicalHistory(data) {
+    // 1. Scroll to container and click Add '+' button
+    this.medicalHxContainer
+      .scrollIntoView()
+      .should('be.visible')
+      .find('.chart-header button.MuiIconButton-colorPrimary, button.MuiIconButton-colorPrimary')
+      .last()
+      .click({ force: true });
+
     this.waitForLoaders();
 
     // 2. Fill Diagnosis (Autocomplete)
-    this.medicalHxContainer.find('input[placeholder="Search diagnosis"]')
-      .should('be.visible')
-      .type(data.diagnosis, { delay: 200, force: true });
-    this.waitForLoaders();
-
-
-    // Wait and select the first suggestion
-    cy.get('li.MuiAutocomplete-option', { timeout: 15000 })
+    this.medicalHxContainer
+      .find('table tbody tr')
       .first()
-      .should('be.visible')
-      .click({ force: true });
-
-    // 3. Fill Verification Dropdown
-    this.medicalHxContainer.find('div.MuiSelect-select').eq(0)
-      .should('be.visible')
-      .click({ force: true });
-    cy.get('li[role="option"]').contains(data.verification).click({ force: true });
-
-    // 4. Fill Clinical Dropdown
-    this.medicalHxContainer.find('div.MuiSelect-select').eq(1)
-      .should('be.visible')
-      .click({ force: true });
-    cy.get('li[role="option"]').contains(data.clinicalStatus).click({ force: true });
-
-    // 5. Fill Asserter (Autocomplete)
-    this.medicalHxContainer.find('input[placeholder="Search asserter..."]')
+      .find('input[placeholder*="Search diagnosis"]')
+      .first()
       .should('be.visible')
       .clear({ force: true })
-      .type(data.asserter, { delay: 200, force: true });
-    this.waitForLoaders();
+      .type(data.diagnosis, { delay: 200, force: true });
 
-
-    // Select from dropdown
-    cy.get('li.MuiAutocomplete-option', { timeout: 15000 })
-      .should('not.contain', 'No result found')
-      .should('be.visible')
-      .first()
-      .click({ force: true });
-
-    cy.log(">>> Primary Medical History fields filled successfully.");
-  }
-
-
-  // Selectors for Additional Details
-  get showAdditionalDetailsBtn() { return cy.contains('button', /Show additional details/i); }
-  get hideAdditionalDetailsBtn() { return cy.contains('button', /Hide additional details/i); }
-
-  /**
-   * Part 2: Fills the additional details fields for Medical History
-   * @param {Object} data - Contains ages, comments, severity, body site, and stage
-   */
-  fillAdditionalMedicalHistory(data) {
-    // 1. Expand section
-    this.showAdditionalDetailsBtn.should('be.visible').click({ force: true });
-    this.waitForLoaders();
-
-    // 2. Target Onset section
-    // Use closest() to find the common parent of label and inputs
-    cy.contains('p', /^Onset$/i)
-      .closest('.MuiBox-root')
-      .parent() // Accessing the row container
-      .find('input[placeholder="Years"]')
-      .should('be.visible')
-      .type(data.onsetAge, { force: true });
-
-    cy.contains('p', /^Onset$/i)
-      .closest('.MuiBox-root')
-      .parent()
-      .find('input[placeholder="Note"]')
-      .type(data.onsetComment, { force: true });
-
-    // 3. Target Abatement section
-    cy.contains('p', /^Abatement$/i)
-      .closest('.MuiBox-root')
-      .parent()
-      .find('input[placeholder="Years"]')
-      .should('be.visible')
-      .type(data.abatementAge, { force: true });
-
-    cy.contains('p', /^Abatement$/i)
-      .closest('.MuiBox-root')
-      .parent()
-      .find('input[placeholder="Note"]')
-      .type(data.abatementComment, { force: true });
-
-    // 4. Select Severity (Dropdown)
-    cy.contains('p', /Severity/i)
-      .parent()
-      .find('[role="combobox"]')
+    cy.get('li.MuiAutocomplete-option, li.autocomplete-option', { timeout: 300000 })
       .first()
       .should('be.visible')
       .click({ force: true });
-    cy.get('li[role="option"]').contains(data.severity).click({ force: true });
 
-    // 5. Fill Body site (Autocomplete)
-    cy.contains('p', /Body site/i)
-      .parent()
-      .find('input')
-      .first() // Ensures only the Body site input is targeted
+    // 3. Select Verification (Dropdown)
+    if (data.verification) {
+      this.medicalHxContainer
+        .find('table tbody tr')
+        .first()
+        .find('td')
+        .eq(1)
+        .find('[role="combobox"], .MuiSelect-select')
+        .click({ force: true });
+
+      cy.get('li[role="option"]', { timeout: 10000 })
+        .contains(data.verification)
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 4. Select Clinical Status (Dropdown)
+    if (data.clinicalStatus) {
+      this.medicalHxContainer
+        .find('table tbody tr')
+        .first()
+        .find('td')
+        .eq(2)
+        .find('[role="combobox"], .MuiSelect-select')
+        .click({ force: true });
+
+      cy.get('li[role="option"]', { timeout: 10000 })
+        .contains(data.clinicalStatus)
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 5. Expand Additional Details
+    this.medicalHxContainer
+      .contains('button', /Show additional details/i)
       .should('be.visible')
-      .type(data.bodySite, { force: true });
+      .click({ force: true });
 
-    // 6. Fill Stage (Autocomplete)
-    cy.contains('p', /Stage/i)
-      .closest('.MuiBox-root')
-      .parent()
-      .find('input')
-      .should('be.visible')
-      .type(data.stage, { force: true });
-    cy.get('li.MuiAutocomplete-option', { timeout: 15000 })
-      .should('not.contain', 'No result found')
-      .first().click({ force: true });
+    this.medicalHxContainer.contains('button', /Hide additional details/i, { timeout: 30000 }).should('be.visible');
 
-    cy.log(">>> Additional details successfully filled using robust traversal.");
+    // 6. Fill Onset (Age & Comment)
+    if (data.onsetAge || data.onsetComment) {
+      this.medicalHxContainer
+        .find('table tbody tr')
+        .contains('div, p', /^ONSET$/i)
+        .closest('.MuiBox-root, div')
+        .parent()
+        .within(() => {
+          if (data.onsetAge) {
+            cy.get('input[placeholder*="Years"]').first().clear({ force: true }).type(data.onsetAge, { force: true });
+          }
+          if (data.onsetComment) {
+            cy.get('input[placeholder*="Note"]').first().clear({ force: true }).type(data.onsetComment, { force: true });
+          }
+        });
+    }
 
-    // 7. Save the Medical History record (Click the blue tick button)
-    cy.contains('button', /Hide additional details/i)
+    // 7. Fill Abatement (Age & Comment)
+    if (data.abatementAge || data.abatementComment) {
+      this.medicalHxContainer
+        .find('table tbody tr')
+        .contains('div, p', /^ABATEMENT$/i)
+        .closest('.MuiBox-root, div')
+        .parent()
+        .within(() => {
+          if (data.abatementAge) {
+            cy.get('input[placeholder*="Years"]').first().clear({ force: true }).type(data.abatementAge, { force: true });
+          }
+          if (data.abatementComment) {
+            cy.get('input[placeholder*="Note"]').first().clear({ force: true }).type(data.abatementComment, { force: true });
+          }
+        });
+    }
+
+    // 8. Select Severity (Dropdown)
+    if (data.severity) {
+      this.medicalHxContainer
+        .find('table tbody tr')
+        .contains('div, p', /^Severity$/i)
+        .parent()
+        .find('[role="combobox"], .MuiSelect-select')
+        .scrollIntoView()
+        .click({ force: true });
+
+      cy.get('li[role="option"]', { timeout: 10000 })
+        .contains(data.severity)
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 9. Fill Body Site (Autocomplete)
+    if (data.bodySite) {
+      this.medicalHxContainer
+        .find('table tbody tr')
+        .find('input[placeholder*="Search body site"]')
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(data.bodySite, { delay: 200, force: true });
+
+      cy.get('li.MuiAutocomplete-option, li.autocomplete-option', { timeout: 300000 })
+        .first()
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 10. Fill Stage (Autocomplete)
+    if (data.stage) {
+      this.medicalHxContainer
+        .find('table tbody tr')
+        .find('input[placeholder*="Search stage"]')
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(data.stage, { delay: 200, force: true });
+
+      cy.get('li.MuiAutocomplete-option, li.autocomplete-option', { timeout: 300000 })
+        .first()
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 11. Fill Asserter (Autocomplete / Text)
+    if (data.asserter) {
+      this.medicalHxContainer
+        .find('table tbody tr')
+        .contains('div, p', /^Asserter$/i)
+        .parent()
+        .find('input')
+        .first()
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(data.asserter, { delay: 200, force: true });
+
+      cy.get('body').then(($body) => {
+        if ($body.find('li.MuiAutocomplete-option, li.autocomplete-option').length > 0) {
+          cy.get('li.MuiAutocomplete-option, li.autocomplete-option', { timeout: 300000 })
+            .first()
+            .click({ force: true });
+        }
+      });
+    }
+
+    // 12. Save Record (Click Blue Tick Button)
+    this.medicalHxContainer
+      .contains('button', /Hide additional details/i)
       .parent()
       .find('button.MuiIconButton-colorPrimary')
       .should('be.visible')
@@ -829,330 +1497,1733 @@ class ChartPage {
 
     this.waitForLoaders();
 
-    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("be.visible");
-    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("not.exist");
+    // 13. Verify creation toast message
+    cy.contains(/created.*successfully/i, { timeout: 60000 }).should('be.visible');
+    cy.contains(/created.*successfully/i, { timeout: 60000 }).should('not.exist');
     this.waitForLoaders();
 
-    // 8. Final Verification: Ensure the record is present with correct details
-    cy.get('#medicalHx').within(() => {
-      cy.contains('div', data.diagnosis).should('be.visible');
+    // 14. Verify newly created Medical History record in summary card (Latest entry)
+    this.medicalHxContainer
+      .find('.MuiAccordion-root', { timeout: 60000 })
+      .filter(`:contains("${data.diagnosis}")`)
+      .first()
+      .scrollIntoView()
+      .should('be.visible')
+      .within(() => {
+        cy.contains(data.diagnosis).should('be.visible');
+        if (data.verification) {
+          cy.contains(new RegExp(data.verification, 'i')).should('be.visible');
+        }
+        if (data.clinicalStatus) {
+          cy.contains(new RegExp(data.clinicalStatus, 'i')).should('be.visible');
+        }
+      });
 
-      cy.get(`div[aria-label*="At age ${data.onsetAge}"][aria-label*="${data.severity}"]`)
-        .should('be.visible');
-    });
-
-    cy.log(">>> Medical History record verified in the summary list.");
+    this.waitForLoaders();
+    cy.log("✅ Medical History Creation Completed");
   }
 
 
-  updateMedicalHistory(existingDiagnosis, newData) {
-    // 1. Click on the existing record (Diagnosis text) to open edit mode
-    cy.contains('#medicalHx div', existingDiagnosis).should('be.visible').click({ force: true });
+  /**
+     * Update Medical History record
+     * @param {string} existingDiagnosis - Diagnosis title of the record to update
+     * @param {Object} updatedData - Values to update
+     */
+  updateMedicalHistory(existingDiagnosis, updatedData) {
+    // 1. Target the latest entry among duplicates and click to enter edit mode
+    this.medicalHxContainer
+      .find('.MuiAccordionSummary-root', { timeout: 60000 })
+      .filter(`:contains("${existingDiagnosis}")`)
+      .first()
+      .find('div[class*="MuiTypography-body1"], div[aria-label*="' + existingDiagnosis + '"]')
+      .first()
+      .scrollIntoView()
+      .should('be.visible')
+      .click({ force: true });
+
     this.waitForLoaders();
 
-    // 2. Update Primary Fields
-    // Diagnosis
-    this.medicalHxContainer.find('input[placeholder="Search diagnosis"]')
-      .should('be.visible').clear({ force: true }).type(newData.diagnosis, { delay: 200, force: true });
-    cy.get('li.MuiAutocomplete-option', { timeout: 15000 })
-      .should('not.contain', 'No result found').first().click({ force: true });
+    // 2. Update Diagnosis (if provided)
+    if (updatedData.diagnosis) {
+      this.medicalHxContainer
+        .find('table tbody tr')
+        .first()
+        .find('input[placeholder*="Search diagnosis"]')
+        .first()
+        .should('be.visible')
+        .clear({ force: true })
+        .type(updatedData.diagnosis, { delay: 200, force: true });
 
-    // Verification
-    this.medicalHxContainer.find('div.MuiSelect-select').eq(0).click({ force: true });
-    cy.get('li[role="option"]').contains(newData.verification).click({ force: true });
+      cy.get('li.MuiAutocomplete-option, li.autocomplete-option', { timeout: 300000 })
+        .first()
+        .should('be.visible')
+        .click({ force: true });
+    }
 
-    // Clinical
-    this.medicalHxContainer.find('div.MuiSelect-select').eq(1).click({ force: true });
-    cy.get('li[role="option"]').contains(newData.clinicalStatus).click({ force: true });
+    // 3. Update Verification (Dropdown)
+    if (updatedData.verification) {
+      this.medicalHxContainer
+        .find('table tbody tr')
+        .first()
+        .find('td')
+        .eq(1)
+        .find('[role="combobox"], .MuiSelect-select')
+        .click({ force: true });
 
-    // Asserter
-    this.medicalHxContainer.find('input[placeholder="Search asserter..."]')
-      .clear({ force: true }).type(newData.asserter, { delay: 200, force: true });
-    cy.get('li.MuiAutocomplete-option', { timeout: 15000 })
-      .should('not.contain', 'No result found').first().click({ force: true });
+      cy.get('li[role="option"]', { timeout: 10000 })
+        .contains(updatedData.verification)
+        .should('be.visible')
+        .click({ force: true });
+    }
 
-    // 3. Update Additional Details
-    // this.showAdditionalDetailsBtn.should('be.visible').click({ force: true });
+    // 4. Update Clinical Status (Dropdown)
+    if (updatedData.clinicalStatus) {
+      this.medicalHxContainer
+        .find('table tbody tr')
+        .first()
+        .find('td')
+        .eq(2)
+        .find('[role="combobox"], .MuiSelect-select')
+        .click({ force: true });
 
-    // Onset
-    cy.contains('p', /^Onset$/i).closest('.MuiBox-root').parent().within(() => {
-      cy.get('input[placeholder="Years"]').clear({ force: true }).type(newData.onsetAge, { force: true });
-      cy.get('input[placeholder="Note"]').clear({ force: true }).type(newData.onsetComment, { force: true });
-    });
+      cy.get('li[role="option"]', { timeout: 10000 })
+        .contains(updatedData.clinicalStatus)
+        .should('be.visible')
+        .click({ force: true });
+    }
 
-    // Abatement
-    cy.contains('p', /^Abatement$/i).closest('.MuiBox-root').parent().within(() => {
-      cy.get('input[placeholder="Years"]').clear({ force: true }).type(newData.abatementAge, { force: true });
-      cy.get('input[placeholder="Note"]').clear({ force: true }).type(newData.abatementComment, { force: true });
-    });
+    // 5. Update Onset
+    if (updatedData.onsetAge || updatedData.onsetComment) {
+      this.medicalHxContainer
+        .find('table tbody tr')
+        .contains('div, p', /^ONSET$/i)
+        .closest('.MuiBox-root, div')
+        .parent()
+        .within(() => {
+          if (updatedData.onsetAge) {
+            cy.get('input[placeholder*="Years"]').first().clear({ force: true }).type(updatedData.onsetAge, { force: true });
+          }
+          if (updatedData.onsetComment) {
+            cy.get('input[placeholder*="Note"]').first().clear({ force: true }).type(updatedData.onsetComment, { force: true });
+          }
+        });
+    }
 
-    // Severity
-    cy.contains('p', /Severity/i).parent().find('[role="combobox"]').first().click({ force: true });
-    cy.get('li[role="option"]').contains(newData.severity).click({ force: true });
+    // 6. Update Abatement
+    if (updatedData.abatementAge || updatedData.abatementComment) {
+      this.medicalHxContainer
+        .find('table tbody tr')
+        .contains('div, p', /^ABATEMENT$/i)
+        .closest('.MuiBox-root, div')
+        .parent()
+        .within(() => {
+          if (updatedData.abatementAge) {
+            cy.get('input[placeholder*="Years"]').first().clear({ force: true }).type(updatedData.abatementAge, { force: true });
+          }
+          if (updatedData.abatementComment) {
+            cy.get('input[placeholder*="Note"]').first().clear({ force: true }).type(updatedData.abatementComment, { force: true });
+          }
+        });
+    }
 
-    // Body site
-    cy.contains('p', /Body site/i).parent().find('input').first()
-      .clear({ force: true }).type(newData.bodySite, { delay: 200, force: true });
-    cy.get('li.MuiAutocomplete-option', { timeout: 15000 }).should('not.contain', 'No result found').first().click({ force: true });
+    // 7. Update Severity
+    if (updatedData.severity) {
+      this.medicalHxContainer
+        .find('table tbody tr')
+        .contains('div, p', /^Severity$/i)
+        .parent()
+        .find('[role="combobox"], .MuiSelect-select')
+        .scrollIntoView()
+        .click({ force: true });
 
-    // Stage
-    cy.contains('p', /Stage/i).closest('.MuiBox-root').parent().find('input')
-      .clear({ force: true }).type(newData.stage, { delay: 200, force: true });
-    cy.get('li.MuiAutocomplete-option', { timeout: 15000 }).should('not.contain', 'No result found').first().click({ force: true });
+      cy.get('li[role="option"]', { timeout: 10000 })
+        .contains(updatedData.severity)
+        .should('be.visible')
+        .click({ force: true });
+    }
 
-    // 4. Save (Blue Tick)
-    cy.contains('button', /Hide additional details/i).parent().find('button.MuiIconButton-colorPrimary').click({ force: true });
+    // 8. Update Body site
+    if (updatedData.bodySite) {
+      this.medicalHxContainer
+        .find('table tbody tr')
+        .find('input[placeholder*="Search body site"]')
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(updatedData.bodySite, { delay: 200, force: true });
+
+      cy.get('li.MuiAutocomplete-option, li.autocomplete-option', { timeout: 300000 })
+        .first()
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 9. Update Stage
+    if (updatedData.stage) {
+      this.medicalHxContainer
+        .find('table tbody tr')
+        .find('input[placeholder*="Search stage"]')
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(updatedData.stage, { delay: 200, force: true });
+
+      cy.get('li.MuiAutocomplete-option, li.autocomplete-option', { timeout: 300000 })
+        .first()
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 10. Update Asserter
+    if (updatedData.asserter) {
+      this.medicalHxContainer
+        .find('table tbody tr')
+        .contains('div, p', /^Asserter$/i)
+        .parent()
+        .find('input')
+        .first()
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(updatedData.asserter, { delay: 200, force: true });
+
+      cy.get('body').then(($body) => {
+        if ($body.find('li.MuiAutocomplete-option, li.autocomplete-option', { timeout: 300000 }).length > 0) {
+          cy.get('li.MuiAutocomplete-option, li.autocomplete-option', { timeout: 300000 })
+            .first()
+            .click({ force: true });
+        }
+      });
+    }
+
+    // 11. Save Updated Record (Click Blue Tick Button)
+    this.medicalHxContainer
+      .contains('button', /Hide additional details/i)
+      .parent()
+      .find('button.MuiIconButton-colorPrimary')
+      .should('be.visible')
+      .click({ force: true });
+
     this.waitForLoaders();
 
-    // 5. Verification after update
-    cy.contains(/updated.*successfully/i, { timeout: 30000 }).should("be.visible");
+    // 12. Verify update toast message
+    cy.contains(/updated.*successfully/i, { timeout: 60000 }).should('be.visible');
+    cy.contains(/updated.*successfully/i, { timeout: 60000 }).should('not.exist');
     this.waitForLoaders();
 
-    cy.get('#medicalHx').within(() => {
-      cy.contains('div', newData.diagnosis).should('be.visible');
-      cy.get(`div[aria-label*="At age ${newData.onsetAge}"][aria-label*="${newData.severity}"]`).should('be.visible');
-    });
-
-
-    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("be.visible");
-    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("not.exist");
+    // 13. Verify updated record in summary card
+    const targetDiagnosis = updatedData.diagnosis || existingDiagnosis;
+    this.medicalHxContainer
+      .find('.MuiAccordion-root', { timeout: 60000 })
+      .filter(`:contains("${targetDiagnosis}")`)
+      .first()
+      .scrollIntoView()
+      .should('be.visible')
+      .within(() => {
+        cy.contains(targetDiagnosis).should('be.visible');
+        if (updatedData.verification) {
+          cy.contains(new RegExp(updatedData.verification, 'i')).should('be.visible');
+        }
+        if (updatedData.clinicalStatus) {
+          cy.contains(new RegExp(updatedData.clinicalStatus, 'i')).should('be.visible');
+        }
+      });
     this.waitForLoaders();
-
+    cy.log("✅ Medical History Update Completed");
   }
 
+  /**
+   * Delete Medical History record
+   * @param {string} diagnosisTitle - Diagnosis title of the record to delete
+   */
   deleteMedicalHistory(diagnosisTitle) {
-    // 1. Find the specific record row and target the red delete button
-    cy.contains('#medicalHx div', diagnosisTitle)
-      .closest('.MuiPaper-root')
+    // 1. Locate the latest record by diagnosis and click the red delete button
+    this.medicalHxContainer
+      .find('.MuiAccordion-root', { timeout: 60000 })
+      .filter(`:contains("${diagnosisTitle}")`)
+      .first()
+      .scrollIntoView()
+      .should('be.visible')
       .find('button.MuiIconButton-colorError')
       .should('be.visible')
       .click({ force: true });
 
-    // 2. Handle the "Are you sure?" confirmation modal
-    cy.get('.swal2-popup', { timeout: 10000 }).should('be.visible');
-    cy.contains('.swal2-popup button', 'Yes, delete it!')
+    // 2. Handle SweetAlert Confirmation Modal
+    cy.get('.swal2-popup', { timeout: 30000 })
+      .should('be.visible')
+      .within(() => {
+        cy.contains(/Are you sure\?/i).should('be.visible');
+        cy.contains(/You won't be able to revert this!/i).should('be.visible');
+        cy.contains('button', 'Yes, delete it!')
+          .should('be.visible')
+          .click({ force: true });
+      });
+
+    this.waitForLoaders();
+
+    // 3. Verify deleted successfully toast message
+    cy.contains(/deleted.*successfully/i, { timeout: 60000 }).should('be.visible');
+    cy.contains(/deleted.*successfully/i, { timeout: 60000 }).should('not.exist');
+    this.waitForLoaders();
+    cy.log("✅ Medical History Delete Completed");
+  }
+
+
+  // Selectors for Surgical History (New Feature)
+  get surgicalHxContainer() { return cy.get("#surgicalHx"); }
+
+  /**
+   * Create Surgical History record - Initial step
+   * @param {Object} data - Contains surgeryName, surgeryDate, profileType, status, category
+   */
+  createSurgicalHistory(data) {
+    // 1. Scroll to container and click the Add '+' button
+    this.surgicalHxContainer
+      .scrollIntoView()
+      .should('be.visible', { timeout: 300000 })
+      .find('.chart-header button.MuiIconButton-colorPrimary, button.MuiIconButton-colorPrimary', { timeout: 300000 })
+      .last()
+      .click({ force: true });
+
+    this.waitForLoaders();
+
+    // 2. Fill Surgery Name (Autocomplete)
+    this.surgicalHxContainer
+      .find('table tbody tr')
+      .first()
+      .find('input[placeholder*="Search surgery / procedure"]', { timeout: 300000 })
+      .should('be.visible', { timeout: 300000 })
+      .clear({ force: true })
+      .type(data.surgeryName, { delay: 200, force: true });
+
+    cy.get('li.MuiAutocomplete-option, li.autocomplete-option', { timeout: 150000 })
+      .first()
+      .should('be.visible', { timeout: 300000 })
+      .click({ force: true });
+
+    const SURGICAL_HX_DATA = {
+      surgeryName: "Appendectomy",
+      surgeryDate: "2024-05-15",
+      profileType: "Surgical (past surgeries)",
+      status: "Completed",
+      category: "Surgical procedure"
+    };
+
+    // 4. Expand Additional Details
+    this.surgicalHxContainer
+      .contains('button', /Show additional details/i, { timeout: 300000 })
+      .should('be.visible', { timeout: 300000 })
+      .click({ force: true });
+
+    this.surgicalHxContainer.contains('button', /Hide additional details/i, { timeout: 300000 }).should('be.visible');
+
+    // 5. Select Profile type (Dropdown)
+    this.surgicalHxContainer
+      .contains('p', /^Profile type$/i)
+      .parent()
+      .find('[role="combobox"], .MuiSelect-select')
+      .click({ force: true });
+
+    cy.get('li[role="option"]', { timeout: 300000 })
+      .contains(data.profileType, { timeout: 300000 })
+      .should('be.visible', { timeout: 300000 })
+      .click({ force: true });
+
+    // 6. Select Status (Dropdown)
+    this.surgicalHxContainer
+      .contains('p', /^Status$/i, { timeout: 300000 })
+      .parent()
+      .find('[role="combobox"], .MuiSelect-select', { timeout: 300000 })
+      .click({ force: true });
+
+    cy.get('li[role="option"]', { timeout: 300000 })
+      .contains(data.status, { timeout: 300000 })
       .should('be.visible')
       .click({ force: true });
+
+    // 6.1 Fill Performed Timing Date
+    if (data.performedDate) {
+      this.surgicalHxContainer
+        .contains('div, p', /^PERFORMED TIMING$/i, { timeout: 300000 })
+        .parent()
+        .find('input[type="date"], input', { timeout: 300000 })
+        .last()
+        .should('be.visible')
+        .clear({ force: true })
+        .type(data.performedDate, { force: true });
+    }
+
+    // 7. Fill Category (Autocomplete)
+    this.surgicalHxContainer
+      .contains('div, p', /^Category$/i, { timeout: 300000 })
+      .parent()
+      .find('input', { timeout: 300000 })
+      .first()
+      .should('be.visible')
+      .clear({ force: true })
+      .type(data.category, { delay: 200, force: true });
+
+    cy.get('li.MuiAutocomplete-option, li.autocomplete-option, li[role="option"]', { timeout: 300000 })
+      .first()
+      .should('be.visible')
+      .click({ force: true });
+
+    // 8. Fill Outcome (Autocomplete)
+    if (data.outcome) {
+      this.surgicalHxContainer
+        .find('input[placeholder*="Search outcome"]', { timeout: 300000 })
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(data.outcome, { delay: 200, force: true });
+
+      cy.get('li.MuiAutocomplete-option, li.autocomplete-option', { timeout: 300000 })
+        .first()
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 9. Fill Location (Plain text)
+    if (data.location) {
+      this.surgicalHxContainer
+        .contains('div, p', /^LOCATION$/i, { timeout: 300000 })
+        .parent()
+        .find('input', { timeout: 300000 })
+        .first()
+        .should('be.visible')
+        .clear({ force: true })
+        .type(data.location, { force: true });
+    }
+
+    // 10. Fill Reason (Autocomplete)
+    if (data.reason) {
+      this.surgicalHxContainer
+        .find('input[placeholder*="Search reason"]', { timeout: 300000 })
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(data.reason, { delay: 200, force: true });
+
+      cy.get('li.MuiAutocomplete-option, li.autocomplete-option', { timeout: 300000 })
+        .first()
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 11. Fill Body site (Autocomplete)
+    if (data.bodySite) {
+      this.surgicalHxContainer
+        .find('input[placeholder*="Search body site"]', { timeout: 300000 })
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(data.bodySite, { delay: 200, force: true });
+
+      cy.get('li.MuiAutocomplete-option, li.autocomplete-option', { timeout: 300000 })
+        .first()
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 12. Fill Complication (Plain text)
+    if (data.complication) {
+      this.surgicalHxContainer
+        .contains('div, p', /^Complication$/i, { timeout: 300000 })
+        .parent()
+        .find('input', { timeout: 300000 })
+        .first()
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(data.complication, { force: true });
+    }
+
+    // 13. Fill Follow-up (Plain text)
+    if (data.followUp) {
+      this.surgicalHxContainer
+        .contains('div, p', /^Follow-up$/i, { timeout: 300000 })
+        .parent()
+        .find('input', { timeout: 300000 })
+        .first()
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(data.followUp, { force: true });
+    }
+
+    // 14. Fill Note (Plain text / Textarea)
+    if (data.note) {
+      this.surgicalHxContainer
+        .find('textarea[placeholder*="Additional context..."], input[placeholder*="Additional context..."]', { timeout: 300000 })
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(data.note, { force: true });
+    }
+
+    // 15. Save Surgical History Record (Click Blue Tick Button)
+    this.surgicalHxContainer
+      .contains('button', /Hide additional details/i, { timeout: 300000 })
+      .parent()
+      .find('button.MuiIconButton-colorPrimary', { timeout: 300000 })
+      .should('be.visible')
+      .click({ force: true });
+
     this.waitForLoaders();
 
-
-    // 3. Verify success message
-    cy.contains(/deleted.*successfully/i, { timeout: 20000 }).should('be.visible');
-    cy.contains(/deleted.*successfully/i, { timeout: 20000 }).should('not.exist');
-
-    // 4. Final sync
+    // 16. Verify creation toast message
+    cy.contains(/created.*successfully/i, { timeout: 600000 }).should('be.visible');
+    cy.contains(/created.*successfully/i, { timeout: 600000 }).should('not.exist');
     this.waitForLoaders();
+
+    // 17. Verify newly created Surgical History record (Targets the latest/top entry among duplicates)
+    this.surgicalHxContainer
+      .find('.MuiAccordion-root', { timeout: 300000 })
+      .filter(`:contains("${data.surgeryName}")`)
+      .first()
+      .scrollIntoView()
+      .should('be.visible')
+      .within(() => {
+        // Verify Surgery Name
+        cy.contains(data.surgeryName).should('be.visible', { timeout: 300000 });
+
+        // Verify Status and Outcome together or individually
+        if (data.status) {
+          cy.contains(new RegExp(data.status, 'i', { timeout: 300000 })).should('be.visible');
+        }
+        if (data.outcome) {
+          cy.contains(new RegExp(data.outcome, 'i', { timeout: 300000 })).should('be.visible');
+        }
+      });
   }
-
-
-
-  // Selectors for Surgical History
-  get surgicalHxContainer() { return cy.get("#surgicalHx"); }
-  get addSurgicalBtn() { return this.surgicalHxContainer.find(".chart-header button.MuiIconButton-colorPrimary"); }
 
   /**
-   * Complete CRUD operation for Surgical History
-   */
-  surgicalHistoryCRUD() {
-    const idCreate = Math.floor(100 + Math.random() * 900);
-    const idUpdate = Math.floor(100 + Math.random() * 900);
-    const initialSurgical = "Cataract Surgery ID: " + idCreate;
-    const updatedSurgical = "Glaucoma Surgery ID: " + idUpdate;
+     * Update Surgical History record - Initial step (Re-open edit mode)
+     * @param {string} existingSurgeryName - Surgery name of the record to update
+     * @param {Object} updatedData - Values to update
+     */
+  updateSurgicalHistory(existingSurgeryName, updatedData) {
+    // 1. Target the specific Surgery Name text element directly (not the whole accordion header)
+    this.surgicalHxContainer
+      .find('.MuiAccordionSummary-root', { timeout: 300000 })
+      .filter(`:contains("${existingSurgeryName}")`)
+      .first()
+      .find('div[class*="MuiTypography-body1"], div[aria-label*="' + existingSurgeryName + '"]', { timeout: 300000 })
+      .first()
+      .scrollIntoView()
+      .should('be.visible')
+      .click({ force: true });
 
-    // --- CREATE PART ---
-    this.addSurgicalBtn.click({ force: true });
-
-    this.surgicalHxContainer.find("table tbody tr").first().as('surgicalNewRow').within(() => {
-      // Index 0: Procedure/Diagnosis, Index 1: Date
-      cy.get("td").eq(0).find("input").first().type(initialSurgical, { force: true });
-      cy.get("td").eq(1).find("input").first().type("2024-05-15", { force: true });
-      cy.get("td").last().find("button").first().click({ force: true });
-    });
-
-    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("be.visible");
-    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
 
-    // --- UPDATE PART ---
-    cy.contains("#surgicalHx tr", idCreate.toString())
-      .scrollIntoView()
-      .as("surgicalRowToUpdate");
+    // 2. Verify edit form table row is rendered
+    this.surgicalHxContainer
+      .find('table tbody tr', { timeout: 300000 })
+      .first()
+      .find('input[placeholder*="Search surgery / procedure"]', { timeout: 300000 })
+      .first()
+      .should('be.visible');
 
-    // Enter edit mode
-    cy.get("@surgicalRowToUpdate").find("td").first().click({ force: true });
+    // 2. Update Surgery Name (if provided)
+    if (updatedData.surgeryName) {
+      this.surgicalHxContainer
+        .find('table tbody tr', { timeout: 300000 })
+        .first()
+        .find('input[placeholder*="Search surgery / procedure"]', { timeout: 300000 })
+        .first()
+        .should('be.visible')
+        .clear({ force: true })
+        .type(updatedData.surgeryName, { delay: 200, force: true });
 
-    cy.get("@surgicalRowToUpdate").within(() => {
-      cy.get("input", { timeout: 120000 }).should("be.visible");
-      cy.get("td").eq(0).find("input").first().clear({ force: true }).type(updatedSurgical, { force: true });
-      cy.get("td").last().find("button").first().click({ force: true });
-    });
-
-    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("be.visible");
-    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("not.exist");
-    this.waitForLoaders();
-
-    // --- DELETE PART ---
-    cy.contains("#surgicalHx tr", idUpdate.toString())
-      .scrollIntoView()
-      .as("surgicalRowToDelete");
-
-    cy.get("@surgicalRowToDelete").click({ force: true });
-
-    cy.get("@surgicalRowToDelete").within(() => {
-      cy.get("input", { timeout: 120000 }).should("be.visible");
-      cy.get('button[aria-label="Delete"], button[aria-label="delete"]')
-        .should("be.visible")
+      cy.get('li.MuiAutocomplete-option, li.autocomplete-option', { timeout: 300000 })
+        .first()
+        .should('be.visible')
         .click({ force: true });
-    });
+    }
 
-    cy.contains("button", "Yes, delete it!").click({ force: true });
-    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("be.visible");
-    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("not.exist");
+    // 3. Update Surgery Date (if provided)
+    if (updatedData.surgeryDate) {
+      this.surgicalHxContainer
+        .find('table tbody tr', { timeout: 300000 })
+        .first()
+        .find('td', { timeout: 300000 })
+        .eq(1)
+        .find('input', { timeout: 300000 })
+        .first()
+        .should('be.visible')
+        .clear({ force: true })
+        .type(updatedData.surgeryDate, { force: true });
+    }
+
+    // 4. Update Profile type (if provided)
+    if (updatedData.profileType) {
+      this.surgicalHxContainer
+        .contains('p', /^Profile type$/i)
+        .parent()
+        .find('[role="combobox"], .MuiSelect-select', { timeout: 300000 })
+        .click({ force: true });
+
+      cy.get('li[role="option"]', { timeout: 300000 })
+        .contains(updatedData.profileType, { timeout: 300000 })
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 5. Update Status (Scoped to edit table/form container)
+    if (updatedData.status) {
+      this.surgicalHxContainer
+        .find('table tbody tr', { timeout: 300000 })
+        .contains('p', /^Status$/i, { timeout: 300000 })
+        .parent()
+        .find('[role="combobox"], .MuiSelect-select', { timeout: 300000 })
+        .scrollIntoView()
+        .should('be.visible')
+        .click({ force: true });
+
+      cy.get('li[role="option"]', { timeout: 300000 })
+        .contains(updatedData.status, { timeout: 300000 })
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 6. Update Performed Timing Date (if provided)
+    if (updatedData.performedDate) {
+      this.surgicalHxContainer
+        .contains('div, p', /^PERFORMED TIMING$/i, { timeout: 300000 })
+        .parent()
+        .find('input[type="date"], input', { timeout: 300000 })
+        .last()
+        .should('be.visible')
+        .clear({ force: true })
+        .type(updatedData.performedDate, { force: true });
+    }
+
+    // 7. Update Category (if provided)
+    if (updatedData.category) {
+      this.surgicalHxContainer
+        .contains('div, p', /^Category$/i, { timeout: 300000 })
+        .parent()
+        .find('input', { timeout: 300000 })
+        .first()
+        .should('be.visible')
+        .clear({ force: true })
+        .type(updatedData.category, { delay: 200, force: true });
+
+      cy.get('li.MuiAutocomplete-option, li.autocomplete-option, li[role="option"]', { timeout: 300000 })
+        .first()
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 8. Update Outcome (if provided)
+    if (updatedData.outcome) {
+      this.surgicalHxContainer
+        .find('input[placeholder*="Search outcome"]', { timeout: 300000 })
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(updatedData.outcome, { delay: 200, force: true });
+
+      cy.get('li.MuiAutocomplete-option, li.autocomplete-option', { timeout: 300000 })
+        .first()
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 9. Update Location (Scoped inside edit table/form container)
+    if (updatedData.location) {
+      this.surgicalHxContainer
+        .find('table tbody tr', { timeout: 300000 })
+        .contains('div, p', /^LOCATION$/i, { timeout: 300000 })
+        .parent()
+        .find('input', { timeout: 300000 })
+        .first()
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(updatedData.location, { force: true });
+    }
+
+    // 10. Update Reason (if provided)
+    if (updatedData.reason) {
+      this.surgicalHxContainer
+        .find('input[placeholder*="Search reason"]', { timeout: 300000 })
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(updatedData.reason, { delay: 200, force: true });
+
+      cy.get('li.MuiAutocomplete-option, li.autocomplete-option', { timeout: 300000 })
+        .first()
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 11. Update Body site (if provided)
+    if (updatedData.bodySite) {
+      this.surgicalHxContainer
+        .find('input[placeholder*="Search body site"]', { timeout: 300000 })
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(updatedData.bodySite, { delay: 200, force: true });
+
+      cy.get('li.MuiAutocomplete-option, li.autocomplete-option', { timeout: 300000 })
+        .first()
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 12. Update Complication (Scoped inside edit table/form container)
+    if (updatedData.complication) {
+      this.surgicalHxContainer
+        .find('table tbody tr')
+        .contains('div, p', /^Complication$/i, { timeout: 300000 })
+        .parent()
+        .find('input', { timeout: 300000 })
+        .first()
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(updatedData.complication, { force: true });
+    }
+
+    // 13. Update Follow-up (Scoped inside edit table/form container)
+    if (updatedData.followUp) {
+      this.surgicalHxContainer
+        .find('table tbody tr', { timeout: 300000 })
+        .contains('div, p', /^Follow-up$/i, { timeout: 300000 })
+        .parent()
+        .find('input')
+        .first()
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(updatedData.followUp, { force: true });
+    }
+
+    // 14. Update Note (Scoped inside edit table/form container)
+    if (updatedData.note) {
+      this.surgicalHxContainer
+        .find('table tbody tr', { timeout: 300000 })
+        .find('textarea[placeholder*="Additional context..."], input[placeholder*="Additional context..."]', { timeout: 300000 })
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(updatedData.note, { force: true });
+    }
+
+    // 15. Save Updated Surgical History (Click Blue Tick Button)
+    this.surgicalHxContainer
+      .contains('button', /Hide additional details/i, { timeout: 300000 })
+      .parent()
+      .find('button.MuiIconButton-colorPrimary', { timeout: 300000 })
+      .should('be.visible')
+      .click({ force: true });
+
+    this.waitForLoaders();
+
+    // 16. Verify update toast message
+    cy.contains(/updated.*successfully/i, { timeout: 600000 }).should('be.visible');
+    cy.contains(/updated.*successfully/i, { timeout: 600000 }).should('not.exist');
+    this.waitForLoaders();
+
+    // 17. Verify updated record in the latest accordion card
+    const targetSurgeryName = updatedData.surgeryName || existingSurgeryName;
+    this.surgicalHxContainer
+      .find('.MuiAccordion-root', { timeout: 300000 })
+      .filter(`:contains("${targetSurgeryName}")`, { timeout: 300000 })
+      .first()
+      .scrollIntoView()
+      .should('be.visible')
+      .within(() => {
+        cy.contains(targetSurgeryName, { timeout: 300000 }).should('be.visible');
+        if (updatedData.status) {
+          cy.contains(new RegExp(updatedData.status, 'i', { timeout: 300000 })).should('be.visible');
+        }
+        if (updatedData.outcome) {
+          cy.contains(new RegExp(updatedData.outcome, 'i', { timeout: 300000 })).should('be.visible');
+        }
+      });
+  }
+
+  /**
+ * Delete Surgical History record
+ * @param {string} surgeryName - Surgery name of the record to delete
+ */
+  deleteSurgicalHistory(surgeryName) {
+    // 1. Locate the latest record by surgery name and click the red delete button
+    this.surgicalHxContainer
+      .find('.MuiAccordion-root', { timeout: 600000 })
+      .filter(`:contains("${surgeryName}")`)
+      .first()
+      .scrollIntoView()
+      .should('be.visible')
+      .find('button.MuiIconButton-colorError', { timeout: 600000 })
+      .should('be.visible')
+      .click({ force: true });
+
+    // 2. Handle SweetAlert Confirmation Modal
+    cy.get('.swal2-popup', { timeout: 300000 })
+      .should('be.visible')
+      .within(() => {
+        cy.contains(/Are you sure\?/i).should('be.visible');
+        cy.contains(/You won't be able to revert this!/i).should('be.visible');
+        cy.contains('button', 'Yes, delete it!')
+          .should('be.visible')
+          .click({ force: true });
+      });
+
+    this.waitForLoaders();
+
+    // 3. Verify deleted successfully toast message
+    cy.contains(/deleted.*successfully/i, { timeout: 600000 }).should('be.visible');
+    cy.contains(/deleted.*successfully/i, { timeout: 600000 }).should('not.exist');
     this.waitForLoaders();
   }
 
-  // Selectors for Family History
+
+
+  // Selectors for Family History (New Feature)
   get familyHxContainer() { return cy.get("#familyHx"); }
-  get addFamilyBtn() { return this.familyHxContainer.find(".chart-header button.MuiIconButton-colorPrimary"); }
 
   /**
-   * Complete CRUD operation for Family History
-   */
-  familyHistoryCRUD() {
-    const idCreate = Math.floor(100 + Math.random() * 900);
-    const idUpdate = Math.floor(100 + Math.random() * 900);
-    const initialFamily = "Diabetes ID: " + idCreate;
-    const updatedFamily = "Heart Disease ID: " + idUpdate;
+    * Create Family History - Initial step (Diagnosis & Relationship)
+    * @param {Object} data - Contains diagnosis search query and relationship
+    */
+  createFamilyHistory(data) {
+    // 1. Scroll container into view and click the Add '+' button
+    this.familyHxContainer
+      .scrollIntoView()
+      .should('be.visible')
+      .find('.chart-header button.MuiIconButton-colorPrimary, button.MuiIconButton-colorPrimary')
+      .last()
+      .click({ force: true });
 
-    // --- CREATE PART ---
-    this.addFamilyBtn.click({ force: true });
-
-    this.familyHxContainer.find("table tbody tr").first().as('familyNewRow').within(() => {
-      // Index 0: Diagnosis, Index 1: Relation
-      cy.get("td").eq(0).find("input").first().type(initialFamily, { force: true });
-      cy.get("td").eq(1).find("input").first().type("Father", { force: true });
-      cy.get("td").last().find("button").first().click({ force: true });
-    });
-
-    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("be.visible");
-    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("not.exist");
     this.waitForLoaders();
 
-    // --- UPDATE PART ---
-    cy.contains("#familyHx tr", idCreate.toString())
+    // 2. Type Diagnosis and select first option from autocomplete
+    this.familyHxContainer
+      .find('table tbody tr')
+      .first()
+      .find('input[placeholder*="Search"]')
+      .first()
+      .should('be.visible')
+      .clear({ force: true })
+      .type(data.diagnosis, { delay: 200, force: true });
+
+    cy.get('li.MuiAutocomplete-option, li.autocomplete-option', { timeout: 300000 })
+      .first()
+      .should('be.visible')
+      .click({ force: true });
+
+    // 3. Select Relationship from dropdown
+    this.familyHxContainer
+      .find('table tbody tr')
+      .first()
+      .find('input[placeholder*="Select relationship"]')
+      .should('be.visible')
+      .click({ force: true });
+
+    // 4. Choose relationship option from the opened dropdown list
+    cy.get('li.MuiAutocomplete-option, li[role="option"]', { timeout: 10000 })
+      .contains(data.relationship)
+      .should('be.visible')
+      .click({ force: true });
+
+    // 5. Expand and wait for Additional Details
+    this.familyHxContainer
+      .contains('button', /Show additional details/i)
+      .should('be.visible')
+      .click({ force: true });
+
+    this.familyHxContainer.contains('button', /Hide additional details/i).should('be.visible');
+    this.familyHxContainer.contains(/Conditions/i).should('be.visible');
+    this.familyHxContainer.contains(/Procedures/i).should('be.visible');
+    this.familyHxContainer.contains(/Reasons/i).should('be.visible');
+
+    // 6. Fill Condition (Autocomplete)
+    this.familyHxContainer
+      .contains('p', /^Condition$/i)
+      .parent()
+      .find('input[placeholder*="Search"]')
+      .should('be.visible')
+      .clear({ force: true })
+      .type(data.condition, { delay: 200, force: true });
+
+    cy.get('li.MuiAutocomplete-option, li.autocomplete-option', { timeout: 15000 })
+      .first()
+      .should('be.visible')
+      .click({ force: true });
+
+    // 7. Fill Age & Comment
+    this.familyHxContainer
+      .contains('div, p', /^Age$/i)
+      .parent()
+      .find('input')
+      .first()
+      .clear({ force: true })
+      .type(data.age, { force: true });
+
+    this.familyHxContainer
+      .find('input[placeholder*="e.g. around age 40"]')
+      .should('be.visible')
+      .clear({ force: true })
+      .type(data.comment, { force: true });
+
+    // 8. Select Outcome (Dropdown)
+    this.familyHxContainer
+      .contains('div, p', /^Outcome$/i)
+      .parent()
+      .find('[role="combobox"], .MuiSelect-select')
+      .click({ force: true });
+
+    cy.get('li[role="option"]', { timeout: 10000 })
+      .contains(data.outcome)
+      .should('be.visible')
+      .click({ force: true });
+
+    // 9. Check Contributed to death
+    this.familyHxContainer
+      .contains('p', /^Contributed to death$/i)
+      .parent()
+      .find('input[type="checkbox"]')
+      .check({ force: true });
+
+    this.familyHxContainer
+      .find('input[placeholder*="Note about this condition"]')
+      .should('be.visible')
+      .clear({ force: true })
+      .type(data.note, { force: true });
+
+    // 10. Fill Procedures Section
+    cy.get('#family-history-section-procedures')
       .scrollIntoView()
-      .as("familyRowToUpdate");
+      .within(() => {
+        // Procedure Autocomplete
+        cy.get('input[placeholder*="Search procedure"]')
+          .should('be.visible')
+          .clear({ force: true })
+          .type(data.procedure, { delay: 200, force: true });
+      });
 
-    // Click the first cell to enter edit mode
-    cy.get("@familyRowToUpdate").find("td").first().click({ force: true });
+    cy.get('li.MuiAutocomplete-option, li.autocomplete-option', { timeout: 15000 })
+      .first()
+      .should('be.visible')
+      .click({ force: true });
 
-    cy.get("@familyRowToUpdate").within(() => {
-      // Wait for input fields to render properly
-      cy.get("input", { timeout: 120000 }).should("be.visible");
+    cy.get('#family-history-section-procedures').within(() => {
+      // Age & Comment
+      cy.contains('div, p', /^Age$/i)
+        .parent()
+        .find('input')
+        .first()
+        .clear({ force: true })
+        .type(data.procedureAge, { force: true });
 
-      cy.get("td").eq(0).find("input").first().clear({ force: true }).type(updatedFamily, { force: true });
-      cy.get("td").last().find("button").first().click({ force: true });
+      cy.get('input[placeholder*="e.g. around age 50"]')
+        .should('be.visible')
+        .clear({ force: true })
+        .type(data.procedureComment, { force: true });
+
     });
 
-    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("be.visible");
-    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("not.exist");
-    this.waitForLoaders();
-
-    // --- DELETE PART ---
-    cy.contains("#familyHx tr", idUpdate.toString())
+    // 11. Fill Reasons Section
+    cy.get('#family-history-section-reasons')
       .scrollIntoView()
-      .as("familyRowToDelete");
+      .within(() => {
+        // Reason Autocomplete
+        cy.get('input[placeholder*="Search clinical finding"]')
+          .should('be.visible')
+          .clear({ force: true })
+          .type(data.reason, { delay: 200, force: true });
+      });
 
-    // Click row first to trigger action buttons visibility
-    cy.get("@familyRowToDelete").click({ force: true });
+    cy.get('li.MuiAutocomplete-option, li.autocomplete-option', { timeout: 15000 })
+      .first()
+      .should('be.visible')
+      .click({ force: true });
 
-    cy.get("@familyRowToDelete").within(() => {
-      cy.get('button[aria-label="Delete"], button[aria-label="delete"]', { timeout: 120000 })
-        .should("be.visible")
+    cy.get('#family-history-section-reasons').within(() => {
+      // Reference type Autocomplete
+      cy.get('input[placeholder*="Search procedure"]')
+        .should('be.visible')
+        .clear({ force: true })
+        .type(data.referenceType, { delay: 200, force: true });
+    });
+
+    cy.get('li.MuiAutocomplete-option, li.autocomplete-option', { timeout: 15000 })
+      .first()
+      .should('be.visible')
+      .click({ force: true });
+
+    // 12. Fill Personal Details Section
+    cy.get('#family-history-section-personal')
+      .scrollIntoView()
+      .within(() => {
+        // Relative name (Text field)
+        cy.get('input[placeholder*="Relative name"]')
+          .should('be.visible')
+          .clear({ force: true })
+          .type(data.relativeName, { force: true });
+
+        // Sex (Dropdown)
+        cy.contains('p', /^Sex$/i)
+          .parent()
+          .find('[role="combobox"], .MuiSelect-select')
+          .click({ force: true });
+      });
+
+    cy.get('li[role="option"]', { timeout: 10000 })
+      .contains(data.sex)
+      .should('be.visible')
+      .click({ force: true });
+
+    cy.get('#family-history-section-personal').within(() => {
+      // Status (Dropdown)
+      cy.contains('p', /^Status$/i)
+        .parent()
+        .find('[role="combobox"], .MuiSelect-select')
         .click({ force: true });
     });
 
-    cy.contains("button", "Yes, delete it!").click({ force: true });
-    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("be.visible");
-    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("not.exist");
-    this.waitForLoaders();
-  }
+    cy.get('li[role="option"]', { timeout: 10000 })
+      .contains(data.status)
+      .should('be.visible')
+      .click({ force: true });
 
-  /**
-   * Complete CRUD operation for Social History
-   */
-  socialHistoryCRUD() {
-    const idCreate = Math.floor(100 + Math.random() * 900);
-    const idUpdate = Math.floor(100 + Math.random() * 900);
-    const initialNote = "Routine social note ID: " + idCreate;
-    const updatedNote = "Updated social note ID: " + idUpdate;
-
-    // --- CREATE PART ---
-    this.addSocialBtn.click({ force: true });
-
-    // Selecting the first category from dropdown
-    this.socialHxContainer.find("table tbody tr").first().as('socialNewRow').within(() => {
-      cy.get("td").eq(0).find(".MuiSelect-select").click({ force: true });
-    });
-    cy.get('li[role="option"]', { timeout: 60000 }).first().click({ force: true });
-
-    // Filling data fields
-    cy.get('@socialNewRow').within(() => {
-      cy.get("td").eq(1).find("input").first().clear({ force: true }).type("2015", { force: true });
-      cy.get("td").eq(2).find("input").first().clear({ force: true }).type("Present", { force: true });
-      cy.get("td").eq(3).find("input").first().clear({ force: true }).type(initialNote, { force: true });
-      cy.get("td").last().find("button").first().click({ force: true });
-    });
-
-    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("be.visible");
-
-    cy.contains(/ *created.*successfully/i, { timeout: 120000 }).should("not.exist");
-    this.waitForLoaders();
-
-    // --- UPDATE PART ---
-    cy.contains("#socialHx tr", idCreate.toString())
-      .scrollIntoView()
-      .as("socialRowToUpdate");
-
-    // Click to enter edit mode
-    cy.get("@socialRowToUpdate").find("td").eq(1).click({ force: true });
-
-    cy.get("@socialRowToUpdate").within(() => {
-      // Ensure input is visible (Wait for rendering)
-      cy.get("input", { timeout: 120000 }).should("be.visible");
-
-      cy.get("td").eq(1).find("input").first().clear({ force: true }).type("2018", { force: true });
-      cy.get("td").eq(2).find("input").first().clear({ force: true }).type("2025", { force: true });
-      cy.get("td").eq(3).find("input").first().clear({ force: true }).type(updatedNote, { force: true });
-      cy.get("td").last().find("button").first().click({ force: true });
-    });
-
-    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("be.visible");
-    cy.contains(/ *updated.*successfully/i, { timeout: 120000 }).should("not.exist");
-    this.waitForLoaders();
-
-    // --- DELETE PART ---
-    cy.contains("#socialHx tr", idUpdate.toString())
-      .scrollIntoView()
-      .as("socialRowToDelete");
-
-    cy.get("@socialRowToDelete").find("td").eq(1).click({ force: true });
-
-    cy.get("@socialRowToDelete").within(() => {
-      cy.get("input", { timeout: 120000 }).should("be.visible");
-      // Targeting the red delete button
-      cy.get('button[aria-label="Delete"], button[aria-label="delete"]')
-        .filter(".MuiIconButton-colorError")
-        .should("be.visible")
+    cy.get('#family-history-section-personal').within(() => {
+      // Data absent reason (Dropdown)
+      cy.contains('p', /^Data absent reason$/i)
+        .parent()
+        .find('[role="combobox"], .MuiSelect-select')
         .click({ force: true });
     });
 
-    cy.contains("button", "Yes, delete it!").click({ force: true });
-    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("be.visible");
-    cy.contains(/ *deleted.*successfully/i, { timeout: 120000 }).should("not.exist");
+    cy.get('li[role="option"]', { timeout: 10000 })
+      .contains(data.dataAbsentReason)
+      .should('be.visible')
+      .click({ force: true });
+
+    cy.get('#family-history-section-personal').within(() => {
+      // Comment (Text field)
+      cy.get('input[placeholder*="e.g. early 1950s"]')
+        .should('be.visible')
+        .clear({ force: true })
+        .type(data.personalComment, { force: true });
+
+      // Note (Textarea)
+      cy.get('textarea[placeholder*="General note about the relative"], input[placeholder*="General note about the relative"]')
+        .should('be.visible')
+        .clear({ force: true })
+        .type(data.note, { force: true });
+    });
+
+    // 13. Save Family History Record (Click Blue Tick Button)
+    this.familyHxContainer
+      .contains('button', /Hide additional details/i)
+      .parent()
+      .find('button.MuiIconButton-colorPrimary')
+      .should('be.visible')
+      .click({ force: true });
 
     this.waitForLoaders();
+
+    // 14. Verification: Toast message
+    cy.contains(/created.*successfully/i, { timeout: 600000 }).should('be.visible');
+    cy.contains(/created.*successfully/i, { timeout: 600000 }).should('not.exist');
+    this.waitForLoaders();
+
+    // 15. Verify created Family History record in the summary card
+    this.familyHxContainer
+      .contains('.MuiAccordion-root', data.diagnosis)
+      .should('be.visible')
+      .within(() => {
+        cy.contains(data.diagnosis).should('be.visible');
+        cy.contains(new RegExp(`Relationship:\\s*${data.relationship}`, 'i')).should('be.visible');
+        cy.contains(new RegExp(`Condition:\\s*${data.condition}`, 'i')).should('be.visible');
+        cy.contains(new RegExp(`Procedure:\\s*${data.procedure}`, 'i')).should('be.visible');
+      });
+    this.waitForLoaders();
+    cy.log("✅ Creation Completed")
+
   }
+
+
+  /**
+     * Update Family History record
+     * @param {string} existingDiagnosis - Diagnosis title of the record to update
+     * @param {Object} updatedData - Values to update
+     */
+  updateFamilyHistory(existingDiagnosis, updatedData) {
+    // 1. Locate the latest card by diagnosis and click its text to enter edit mode
+    this.familyHxContainer
+      .find('.MuiAccordionSummary-root', { timeout: 60000 })
+      .filter(`:contains("${existingDiagnosis}")`)
+      .first()
+      .find('div[class*="MuiTypography-body1"], div[aria-label*="' + existingDiagnosis + '"]')
+      .first()
+      .scrollIntoView()
+      .should('be.visible')
+      .click({ force: true });
+
+    this.waitForLoaders();
+
+    // 2. Update Diagnosis (if provided)
+    if (updatedData.diagnosis) {
+      this.familyHxContainer
+        .find('table tbody tr')
+        .first()
+        .find('input[placeholder*="Search"]')
+        .first()
+        .should('be.visible')
+        .clear({ force: true })
+        .type(updatedData.diagnosis, { delay: 200, force: true });
+
+      cy.get('li.MuiAutocomplete-option, li.autocomplete-option', { timeout: 30000 })
+        .first()
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 3. Update Relationship (if provided)
+    if (updatedData.relationship) {
+      this.familyHxContainer
+        .find('table tbody tr')
+        .first()
+        .find('input[placeholder*="Select relationship"]')
+        .scrollIntoView()
+        .should('be.visible')
+        .click({ force: true });
+
+      cy.get('li.MuiAutocomplete-option, li[role="option"]', { timeout: 10000 })
+        .contains(updatedData.relationship)
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 4. Update Condition (if provided)
+    if (updatedData.condition) {
+      this.familyHxContainer
+        .contains('p', /^Condition$/i)
+        .parent()
+        .find('input[placeholder*="Search"]')
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(updatedData.condition, { delay: 200, force: true });
+
+      cy.get('li.MuiAutocomplete-option, li.autocomplete-option', { timeout: 15000 })
+        .first()
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 5. Update Age & Comment (if provided)
+    if (updatedData.age) {
+      this.familyHxContainer
+        .contains('div, p', /^Age$/i)
+        .parent()
+        .find('input')
+        .first()
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(updatedData.age, { force: true });
+    }
+
+    if (updatedData.comment) {
+      this.familyHxContainer
+        .find('input[placeholder*="e.g. around age 40"]')
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(updatedData.comment, { force: true });
+    }
+
+    // 6. Update Outcome (if provided)
+    if (updatedData.outcome) {
+      this.familyHxContainer
+        .contains('div, p', /^Outcome$/i)
+        .parent()
+        .find('[role="combobox"], .MuiSelect-select')
+        .scrollIntoView()
+        .click({ force: true });
+
+      cy.get('li[role="option"]', { timeout: 10000 })
+        .contains(updatedData.outcome)
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 7. Update Condition Note (if provided)
+    if (updatedData.note) {
+      this.familyHxContainer
+        .find('input[placeholder*="Note about this condition"]')
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(updatedData.note, { force: true });
+    }
+
+    // 8. Update Procedures Section
+    if (updatedData.procedure) {
+      cy.get('#family-history-section-procedures')
+        .scrollIntoView()
+        .within(() => {
+          cy.get('input[placeholder*="Search procedure"]')
+            .clear({ force: true })
+            .type(updatedData.procedure, { delay: 200, force: true });
+        });
+
+      cy.get('li.MuiAutocomplete-option, li.autocomplete-option', { timeout: 15000 })
+        .first()
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    if (updatedData.procedureAge) {
+      cy.get('#family-history-section-procedures').within(() => {
+        cy.contains('div, p', /^Age$/i)
+          .parent()
+          .find('input')
+          .first()
+          .clear({ force: true })
+          .type(updatedData.procedureAge, { force: true });
+      });
+    }
+
+    // 9. Update Reasons Section
+    if (updatedData.reason) {
+      cy.get('#family-history-section-reasons')
+        .scrollIntoView()
+        .within(() => {
+          cy.get('input[placeholder*="Search clinical finding"]')
+            .clear({ force: true })
+            .type(updatedData.reason, { delay: 200, force: true });
+        });
+
+      cy.get('li.MuiAutocomplete-option, li.autocomplete-option', { timeout: 15000 })
+        .first()
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 10. Update Personal Details Section
+    if (updatedData.relativeName) {
+      cy.get('#family-history-section-personal')
+        .scrollIntoView()
+        .within(() => {
+          cy.get('input[placeholder*="Relative name"]')
+            .clear({ force: true })
+            .type(updatedData.relativeName, { force: true });
+        });
+    }
+
+    if (updatedData.sex) {
+      cy.get('#family-history-section-personal')
+        .contains('p', /^Sex$/i)
+        .parent()
+        .find('[role="combobox"], .MuiSelect-select')
+        .scrollIntoView()
+        .click({ force: true });
+
+      cy.get('li[role="option"]', { timeout: 10000 })
+        .contains(updatedData.sex)
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 11. Save Updated Record (Click Blue Tick Button)
+    this.familyHxContainer
+      .contains('button', /Hide additional details/i)
+      .parent()
+      .find('button.MuiIconButton-colorPrimary')
+      .should('be.visible')
+      .click({ force: true });
+
+    this.waitForLoaders();
+
+    // 12. Verify update toast message
+    cy.contains(/updated.*successfully/i, { timeout: 60000 }).should('be.visible');
+    cy.contains(/updated.*successfully/i, { timeout: 60000 }).should('not.exist');
+    this.waitForLoaders();
+
+    // 13. Verify updated record in summary card
+    const targetDiagnosis = updatedData.diagnosis || existingDiagnosis;
+    this.familyHxContainer
+      .find('.MuiAccordion-root', { timeout: 60000 })
+      .filter(`:contains("${targetDiagnosis}")`)
+      .first()
+      .scrollIntoView()
+      .should('be.visible')
+      .within(() => {
+        cy.contains(targetDiagnosis).should('be.visible');
+        if (updatedData.relationship) {
+          cy.contains(new RegExp(`Relationship:\\s*${updatedData.relationship}`, 'i')).should('be.visible');
+        }
+      });
+    this.waitForLoaders();
+    cy.log("✅ Update Completed");
+  }
+
+  /**
+   * Delete Family History record
+   * @param {string} diagnosisTitle - Diagnosis title of the record to delete
+   */
+  deleteFamilyHistory(diagnosisTitle) {
+    // 1. Locate the latest record by diagnosis title and click the red delete button
+    this.familyHxContainer
+      .find('.MuiAccordion-root', { timeout: 60000 })
+      .filter(`:contains("${diagnosisTitle}")`)
+      .first()
+      .scrollIntoView()
+      .should('be.visible')
+      .find('button.MuiIconButton-colorError')
+      .should('be.visible')
+      .click({ force: true });
+
+    // 2. Handle SweetAlert Confirmation Modal
+    cy.get('.swal2-popup', { timeout: 30000 })
+      .should('be.visible')
+      .within(() => {
+        cy.contains(/Are you sure\?/i).should('be.visible');
+        cy.contains(/You won't be able to revert this!/i).should('be.visible');
+        cy.contains('button', 'Yes, delete it!')
+          .should('be.visible')
+          .click({ force: true });
+      });
+
+    this.waitForLoaders();
+
+    // 3. Verify deleted successfully toast message
+    cy.contains(/deleted.*successfully/i, { timeout: 60000 }).should('be.visible');
+    cy.contains(/deleted.*successfully/i, { timeout: 60000 }).should('not.exist');
+    this.waitForLoaders();
+    cy.log("✅ Delete Completed");
+  }
+
+
+
+
+  // Selectors for Social History (New Feature)
+  get socialHxContainer() { return cy.get("#socialHx"); }
+
+  /**
+   * Create Social History record - Initial step up to Method
+   * @param {Object} data - Contains observation, startDate, endDate, note, bodySite, method
+   */
+  createSocialHistory(data) {
+    // 1. Scroll to container and click the Add '+' button
+    this.socialHxContainer
+      .scrollIntoView()
+      .should('be.visible')
+      .find('.chart-header button.MuiIconButton-colorPrimary, button.MuiIconButton-colorPrimary')
+      .last()
+      .click({ force: true });
+
+    this.waitForLoaders();
+
+    // 2. Fill Observation (Autocomplete/Dropdown)
+    this.socialHxContainer
+      .find('table tbody tr')
+      .first()
+      .find('input[placeholder*="Select or type observation"]')
+      .first()
+      .should('be.visible')
+      .click({ force: true })
+      .clear({ force: true })
+      .type(data.observation, { delay: 200, force: true });
+
+    cy.get('li.MuiAutocomplete-option, li.autocomplete-option, li[role="option"]', { timeout: 30000 })
+      .contains(data.observation)
+      .should('be.visible')
+      .click({ force: true });
+
+    // 3. Fill Start Date (Target 2nd cell)
+    if (data.startDate) {
+      this.socialHxContainer
+        .find('table tbody tr')
+        .first()
+        .find('td')
+        .eq(1)
+        .find('input')
+        .first()
+        .should('be.visible')
+        .clear({ force: true })
+        .type(data.startDate, { force: true });
+    }
+
+    // 4. Fill End Date (Target 3rd cell)
+    if (data.endDate) {
+      this.socialHxContainer
+        .find('table tbody tr')
+        .first()
+        .find('td')
+        .eq(2)
+        .find('input')
+        .first()
+        .should('be.visible')
+        .clear({ force: true })
+        .type(data.endDate, { force: true });
+    }
+
+    // 5. Expand Additional Details
+    this.socialHxContainer
+      .contains('button', /Show additional details/i)
+      .should('be.visible')
+      .click({ force: true });
+
+    this.socialHxContainer.contains('button', /Hide additional details/i, { timeout: 30000 }).should('be.visible');
+
+    // 6. Fill Note (Context section)
+    if (data.note) {
+      this.socialHxContainer
+        .find('table tbody tr')
+        .find('textarea[placeholder*="Additional context..."], input[placeholder*="Additional context..."]')
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(data.note, { force: true });
+    }
+
+    // 7. Fill Body site (Autocomplete)
+    if (data.bodySite) {
+      this.socialHxContainer
+        .find('table tbody tr')
+        .find('input[placeholder*="Search body site"]')
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(data.bodySite, { delay: 200, force: true });
+
+      cy.get('li.MuiAutocomplete-option, li.autocomplete-option, li[role="option"]', { timeout: 300000 })
+        .first()
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 8. Fill Method (Plain text)
+    if (data.method) {
+      this.socialHxContainer
+        .find('table tbody tr')
+        .find('input[placeholder*="Patient-reported, Polymerase chain reaction"]')
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(data.method, { force: true });
+    }
+
+    // 9. Fill Components Section (Code dropdown & Value input)
+    if (data.componentCode) {
+      this.socialHxContainer
+        .find('table tbody tr')
+        .contains('div, p', /^Code$/i)
+        .parent()
+        .find('[role="combobox"], .MuiSelect-select')
+        .scrollIntoView()
+        .click({ force: true });
+
+      cy.get('li[role="option"]', { timeout: 30000 })
+        .contains(data.componentCode)
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    if (data.componentValue) {
+      this.socialHxContainer
+        .find('table tbody tr')
+        .find('input[placeholder*="e.g. 20"]')
+        .first()
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(data.componentValue, { force: true });
+    }
+
+    // 10. Fill Interpretations (Autocomplete)
+    if (data.interpretation) {
+      this.socialHxContainer
+        .find('table tbody tr')
+        .find('input[placeholder*="Search and add interpretations..."]')
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(data.interpretation, { delay: 200, force: true });
+
+      cy.get('li.MuiAutocomplete-option, li.autocomplete-option, li[role="option"]', { timeout: 30000 })
+        .first()
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 11. Fill Performers Section (Type dropdown & Person Autocomplete)
+    if (data.performerType) {
+      this.socialHxContainer
+        .find('table tbody tr')
+        .contains('div, p', /^Type$/i)
+        .parent()
+        .find('[role="combobox"], .MuiSelect-select')
+        .scrollIntoView()
+        .click({ force: true });
+
+      cy.get('li[role="option"]', { timeout: 30000 })
+        .contains(data.performerType)
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    if (data.performerPerson) {
+      this.socialHxContainer
+        .find('table tbody tr')
+        .find('input[placeholder*="Search person..."]')
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(data.performerPerson, { delay: 200, force: true });
+
+      cy.get('li.MuiAutocomplete-option, li.autocomplete-option, li[role="option"]', { timeout: 30000 })
+        .first()
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 12. Save Social History Record (Click Blue Tick Button)
+    this.socialHxContainer
+      .contains('button', /Hide additional details/i)
+      .parent()
+      .find('button.MuiIconButton-colorPrimary')
+      .should('be.visible')
+      .click({ force: true });
+
+    this.waitForLoaders();
+
+    // 13. Verify creation toast message
+    cy.contains(/created.*successfully/i, { timeout: 60000 }).should('be.visible');
+    cy.contains(/created.*successfully/i, { timeout: 60000 }).should('not.exist');
+    this.waitForLoaders();
+
+    // 14. Verify newly created Social History record in the summary list
+    this.socialHxContainer
+      .find('.MuiAccordion-root', { timeout: 60000 })
+      .filter(`:contains("${data.observation}")`)
+      .first()
+      .scrollIntoView()
+      .should('be.visible')
+      .within(() => {
+        cy.contains(data.observation).should('be.visible');
+      });
+  }
+
+  /**
+   * Update Social History record
+   * @param {string} existingObservation - Observation title of the record to update
+   * @param {Object} updatedData - Values to update
+   */
+  updateSocialHistory(existingObservation, updatedData) {
+    // 1. Target the specific Observation text element directly to open edit mode
+    this.socialHxContainer
+      .find('.MuiAccordionSummary-root', { timeout: 60000 })
+      .filter(`:contains("${existingObservation}")`)
+      .first()
+      .find('div[class*="MuiTypography-body1"], div[aria-label*="' + existingObservation + '"]')
+      .first()
+      .scrollIntoView()
+      .should('be.visible')
+      .click({ force: true });
+
+    this.waitForLoaders();
+
+    // 2. Update Observation (if provided)
+    if (updatedData.observation) {
+      this.socialHxContainer
+        .find('table tbody tr')
+        .first()
+        .find('input[placeholder*="Select or type observation"]')
+        .first()
+        .should('be.visible')
+        .click({ force: true })
+        .clear({ force: true })
+        .type(updatedData.observation, { delay: 200, force: true });
+
+      cy.get('li.MuiAutocomplete-option, li.autocomplete-option, li[role="option"]', { timeout: 30000 })
+        .contains(updatedData.observation)
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 3. Update Start Date (Target 2nd cell)
+    if (updatedData.startDate) {
+      this.socialHxContainer
+        .find('table tbody tr')
+        .first()
+        .find('td')
+        .eq(1)
+        .find('input')
+        .first()
+        .should('be.visible')
+        .clear({ force: true })
+        .type(updatedData.startDate, { force: true });
+    }
+
+    // 4. Update End Date (Target 3rd cell)
+    if (updatedData.endDate) {
+      this.socialHxContainer
+        .find('table tbody tr')
+        .first()
+        .find('td')
+        .eq(2)
+        .find('input')
+        .first()
+        .should('be.visible')
+        .clear({ force: true })
+        .type(updatedData.endDate, { force: true });
+    }
+
+    // 5. Update Note
+    if (updatedData.note) {
+      this.socialHxContainer
+        .find('table tbody tr')
+        .find('textarea[placeholder*="Additional context..."], input[placeholder*="Additional context..."]')
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(updatedData.note, { force: true });
+    }
+
+    // 6. Update Body site (Autocomplete)
+    if (updatedData.bodySite) {
+      this.socialHxContainer
+        .find('table tbody tr')
+        .find('input[placeholder*="Search body site"]')
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(updatedData.bodySite, { delay: 200, force: true });
+
+      cy.get('li.MuiAutocomplete-option, li.autocomplete-option, li[role="option"]', { timeout: 30000 })
+        .first()
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 7. Update Method (Plain text)
+    if (updatedData.method) {
+      this.socialHxContainer
+        .find('table tbody tr')
+        .find('input[placeholder*="Patient-reported, Polymerase chain reaction"]')
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(updatedData.method, { force: true });
+    }
+
+    // 8. Update Components Section
+    if (updatedData.componentCode) {
+      this.socialHxContainer
+        .find('table tbody tr')
+        .contains('div, p', /^Code$/i)
+        .parent()
+        .find('[role="combobox"], .MuiSelect-select')
+        .scrollIntoView()
+        .click({ force: true });
+
+      cy.get('li[role="option"]', { timeout: 30000 })
+        .contains(updatedData.componentCode)
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    if (updatedData.componentValue) {
+      this.socialHxContainer
+        .find('table tbody tr')
+        .find('input[placeholder*="e.g. 20"]')
+        .first()
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(updatedData.componentValue, { force: true });
+    }
+
+    // 9. Update Interpretations (Autocomplete)
+    if (updatedData.interpretation) {
+      this.socialHxContainer
+        .find('table tbody tr')
+        .find('input[placeholder*="Search and add interpretations..."]')
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(updatedData.interpretation, { delay: 200, force: true });
+
+      cy.get('li.MuiAutocomplete-option, li.autocomplete-option, li[role="option"]', { timeout: 30000 })
+        .first()
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 10. Update Performers Section
+    if (updatedData.performerType) {
+      this.socialHxContainer
+        .find('table tbody tr')
+        .contains('div, p', /^Type$/i)
+        .parent()
+        .find('[role="combobox"], .MuiSelect-select')
+        .scrollIntoView()
+        .click({ force: true });
+
+      cy.get('li[role="option"]', { timeout: 30000 })
+        .contains(updatedData.performerType)
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    if (updatedData.performerPerson) {
+      this.socialHxContainer
+        .find('table tbody tr')
+        .find('input[placeholder*="Search person..."]')
+        .scrollIntoView()
+        .clear({ force: true })
+        .type(updatedData.performerPerson, { delay: 200, force: true });
+
+      cy.get('li.MuiAutocomplete-option, li.autocomplete-option, li[role="option"]', { timeout: 30000 })
+        .first()
+        .should('be.visible')
+        .click({ force: true });
+    }
+
+    // 11. Save Updated Record (Click Blue Tick Button)
+    this.socialHxContainer
+      .contains('button', /Hide additional details/i)
+      .parent()
+      .find('button.MuiIconButton-colorPrimary')
+      .should('be.visible')
+      .click({ force: true });
+
+    this.waitForLoaders();
+
+    // 12. Verify update toast message
+    cy.contains(/updated.*successfully/i, { timeout: 60000 }).should('be.visible');
+    cy.contains(/updated.*successfully/i, { timeout: 60000 }).should('not.exist');
+    this.waitForLoaders();
+
+    // 13. Verify updated record in the latest accordion card
+    const targetObservation = updatedData.observation || existingObservation;
+    this.socialHxContainer
+      .find('.MuiAccordion-root', { timeout: 60000 })
+      .filter(`:contains("${targetObservation}")`)
+      .first()
+      .scrollIntoView()
+      .should('be.visible')
+      .within(() => {
+        cy.contains('div[class*="MuiTypography-body1"]', targetObservation)
+          .should('be.visible');
+      });
+  }
+
+  /**
+   * Delete Social History record
+   * @param {string} observationTitle - Observation title of the record to delete
+   */
+  deleteSocialHistory(observationTitle) {
+    // 1. Locate the latest record by observation title and click the red delete button
+    this.socialHxContainer
+      .find('.MuiAccordion-root', { timeout: 60000 })
+      .filter(`:contains("${observationTitle}")`)
+      .first()
+      .scrollIntoView()
+      .should('be.visible')
+      .find('button.MuiIconButton-colorError')
+      .should('be.visible')
+      .click({ force: true });
+
+    // 2. Handle SweetAlert Confirmation Modal
+    cy.get('.swal2-popup', { timeout: 30000 })
+      .should('be.visible')
+      .within(() => {
+        cy.contains(/Are you sure\?/i).should('be.visible');
+        cy.contains(/You won't be able to revert this!/i).should('be.visible');
+        cy.contains('button', 'Yes, delete it!')
+          .should('be.visible')
+          .click({ force: true });
+      });
+
+    this.waitForLoaders();
+
+    // 3. Verify deleted successfully toast message
+    cy.contains(/deleted.*successfully/i, { timeout: 60000 }).should('be.visible');
+    cy.contains(/deleted.*successfully/i, { timeout: 60000 }).should('not.exist');
+    this.waitForLoaders();
+  }
+
 
   // Selectors for Administrator Notes
   get adminNotesContainer() { return cy.get("#adminNotes"); }
